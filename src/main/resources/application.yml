@@ -1,0 +1,45 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: ai-skill
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 1000MB
+      # 延迟解析 multipart 请求，确保字符编码过滤器先于 multipart 解析执行
+      # 解决 multipart 表单字段中文乱码问题
+      resolve-lazily: true
+  web:
+    resources:
+      static-locations: classpath:/static/
+
+# AI configuration - supports any OpenAI-compatible API
+ai:
+  base-url: ${AI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+  api-key: ${AI_API_KEY:sk-ws-H.ERRRDEX.a5CD.MEUCICpeKXQZPdYa-b6iZBi6xGwormu_75viIxWkltZDPpc5AiEA8hf7LjT9DDxQ8ChrGU8NiwPVJ6jTOzJjiQCxi0-T-Vw}
+  model: ${AI_MODEL:qwen3.7-max}
+  temperature: ${AI_TEMPERATURE:0.7}
+  max-tokens: ${AI_MAX_TOKENS:16384}
+  timeout: ${AI_TIMEOUT:300000}
+  think: ${AI_THINK:false}
+
+# Storage configuration - FTP only
+storage:
+  ftp:
+    host: ${FTP_HOST:localhost}
+    port: ${FTP_PORT:21}
+    username: ${FTP_USERNAME:admin}
+    password: ${FTP_PASSWORD:admin}
+    base-dir: ${FTP_BASE_DIR:/skills}
+
+logging:
+  level:
+    com.example.aiskill: DEBUG
+    org.springframework.web: INFO

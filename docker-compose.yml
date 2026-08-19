@@ -1,0 +1,66 @@
+# ============================================================
+# AI Skill 编排系统 — Docker Compose 部署
+# 服务：vsftpd 存储 + Spring Boot 后端
+# ============================================================
+
+version: '3.9'
+
+services:
+  # ---------- FTP 存储服务 (vsftpd) ----------
+  vsftpd:
+    image: fauria/vsftpd
+    container_name: vsftpd
+    environment:
+      - LOG_STDOUT=1
+      - PASV_ADDRESS=192.168.3.88
+      - PASV_MAX_PORT=20000
+      - PASV_MIN_PORT=20000
+      - FTP_PASS=admin
+      - FTP_USER=admin
+    ports:
+      - '20000:20000'
+      - '21:21'
+      - '20:20'
+    volumes:
+      - '/data/ftp/log/:/var/log/vsftpd/'
+      - '/data/ftp/data/:/home/vsftpd'
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/21' 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ---------- Spring Boot 后端 ----------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: ai-skill-backend
+    ports:
+      - "8080:8080"
+    environment:
+      # FTP 存储配置 — 连接到 vsftpd 容器
+      - FTP_HOST=vsftpd
+      - FTP_PORT=21
+      - FTP_USERNAME=admin
+      - FTP_PASSWORD=admin
+      - FTP_BASE_DIR=/home/vsftpd/skills
+      # AI 模型配置
+      - AI_BASE_URL=${AI_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      - AI_API_KEY=${AI_API_KEY}
+      - AI_MODEL=${AI_MODEL:-qwen3.7-max}
+      - AI_TEMPERATURE=${AI_TEMPERATURE:-0.7}
+      - AI_MAX_TOKENS=${AI_MAX_TOKENS:-16384}
+      - AI_TIMEOUT=${AI_TIMEOUT:-300000}
+    depends_on:
+      vsftpd:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

@@ -1,0 +1,19 @@
+# 翻译术语表
+# 以下术语在翻译时应使用统一的标准译法
+
+# 技术术语
+API = 应用程序接口
+Framework = 框架
+Component = 组件
+Microservice = 微服务
+Deployment = 部署
+Container = 容器
+Orchestration = 编排
+Pipeline = 流水线
+
+# 常见缩写
+AI = 人工智能
+ML = 机器学习
+NLP = 自然语言处理
+UI = 用户界面
+UX = 用户体验

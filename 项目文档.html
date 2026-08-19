@@ -1,0 +1,2598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 技能编排系统 - 项目文档</title>
+    <style>
+        /* ==================== Reset & Base ==================== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-dark: #4338ca;
+            --primary-bg: #eef2ff;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --info: #0ea5e9;
+            --info-bg: #f0f9ff;
+            --purple: #8b5cf6;
+            --purple-bg: #f5f3ff;
+
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 16px;
+            --sidebar-width: 280px;
+            --header-height: 64px;
+            --max-width: 960px;
+            --code-font: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', Consolas, 'Liberation Mono', Menlo, monospace;
+            --body-font: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: calc(var(--header-height) + 20px);
+        }
+
+        body {
+            font-family: var(--body-font);
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        /* ==================== Header ==================== */
+        .doc-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .doc-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .doc-header .header-subtitle {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-left: 12px;
+            font-weight: 400;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 12px;
+            padding: 4px;
+        }
+
+        /* ==================== Sidebar ==================== */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1px solid var(--gray-200);
+            overflow-y: auto;
+            padding: 20px 0;
+            z-index: 900;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+        }
+
+        .sidebar nav > ul > li {
+            margin-bottom: 2px;
+        }
+
+        .sidebar nav .nav-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray-400);
+            padding: 12px 24px 6px;
+        }
+
+        .sidebar nav a {
+            display: block;
+            padding: 8px 24px 8px 28px;
+            color: var(--gray-600);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar nav a:hover {
+            background: var(--gray-50);
+            color: var(--primary);
+            border-left-color: var(--primary-light);
+        }
+
+        .sidebar nav a.active {
+            background: var(--primary-bg);
+            color: var(--primary-dark);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .sidebar nav .nav-sub a {
+            padding-left: 44px;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        /* ==================== Main Content ==================== */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 32px 40px 80px;
+            max-width: var(--max-width);
+        }
+
+        /* ==================== Sections ==================== */
+        .section {
+            margin-bottom: 56px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .section-header.s1 .section-number { background: var(--primary); }
+        .section-header.s2 .section-number { background: var(--info); }
+        .section-header.s3 .section-number { background: var(--success); }
+        .section-header.s4 .section-number { background: var(--warning); }
+        .section-header.s5 .section-number { background: var(--purple); }
+        .section-header.s6 .section-number { background: #ec4899; }
+        .section-header.s7 .section-number { background: #14b8a6; }
+        .section-header.s8 .section-number { background: #f97316; }
+
+        .subsection {
+            margin-top: 32px;
+            margin-bottom: 24px;
+        }
+
+        .subsection-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 16px;
+            padding-left: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .subsection-title.s-info { border-left-color: var(--info); }
+        .subsection-title.s-success { border-left-color: var(--success); }
+        .subsection-title.s-warning { border-left-color: var(--warning); }
+        .subsection-title.s-purple { border-left-color: var(--purple); }
+        .subsection-title.s-danger { border-left-color: var(--danger); }
+
+        h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-700);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: var(--gray-700);
+        }
+
+        ul, ol {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            color: var(--gray-700);
+        }
+
+        strong {
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* ==================== Code Blocks ==================== */
+        code {
+            font-family: var(--code-font);
+            font-size: 13px;
+            background: var(--gray-100);
+            color: var(--danger);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        pre {
+            background: var(--gray-900);
+            color: #e2e8f0;
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: 13px;
+        }
+
+        /* Syntax highlighting */
+        .tok-key { color: #93c5fd; }
+        .tok-str { color: #86efac; }
+        .tok-com { color: #6b7280; font-style: italic; }
+        .tok-num { color: #fbbf24; }
+        .tok-ann { color: #c4b5fd; }
+        .tok-typ { color: #67e8f9; }
+
+        /* ==================== Tables ==================== */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        thead {
+            background: var(--gray-800);
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+            vertical-align: top;
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--gray-50);
+        }
+
+        tbody tr:hover {
+            background: var(--primary-bg);
+        }
+
+        td code, th code {
+            font-size: 12px;
+        }
+
+        /* ==================== File Cards ==================== */
+        .file-card {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.2s;
+        }
+
+        .file-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .file-path {
+            font-family: var(--code-font);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            background: var(--primary-bg);
+            padding: 4px 10px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+
+        .file-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .file-badge.backend { background: var(--success-bg); color: var(--success); }
+        .file-badge.frontend { background: var(--info-bg); color: var(--info); }
+        .file-badge.config { background: var(--warning-bg); color: var(--warning); }
+        .file-badge.deploy { background: var(--purple-bg); color: var(--purple); }
+        .file-badge.sample { background: #fdf2f8; color: #ec4899; }
+
+        .file-purpose {
+            font-size: 14px;
+            color: var(--gray-600);
+            margin-bottom: 12px;
+        }
+
+        .file-key-content {
+            background: var(--gray-50);
+            border-left: 3px solid var(--gray-300);
+            padding: 12px 16px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .file-key-content h5 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        /* ==================== Info Boxes ==================== */
+        .info-box {
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid;
+        }
+
+        .info-box.info {
+            background: var(--info-bg);
+            border-left-color: var(--info);
+        }
+
+        .info-box.success {
+            background: var(--success-bg);
+            border-left-color: var(--success);
+        }
+
+        .info-box.warning {
+            background: var(--warning-bg);
+            border-left-color: var(--warning);
+        }
+
+        .info-box.danger {
+            background: var(--danger-bg);
+            border-left-color: var(--danger);
+        }
+
+        .info-box-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .info-box.info .info-box-title { color: var(--info); }
+        .info-box.success .info-box-title { color: var(--success); }
+        .info-box.warning .info-box-title { color: var(--warning); }
+        .info-box.danger .info-box-title { color: var(--danger); }
+
+        /* ==================== File Tree ==================== */
+        .file-tree {
+            background: var(--gray-900);
+            color: #cbd5e1;
+            border-radius: var(--radius-sm);
+            padding: 20px 24px;
+            font-family: var(--code-font);
+            font-size: 13px;
+            line-height: 1.8;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        .file-tree .dir { color: #93c5fd; font-weight: 600; }
+        .file-tree .file { color: #e2e8f0; }
+        .file-tree .comment { color: #6b7280; font-style: italic; }
+        .file-tree .highlight { color: #fbbf24; }
+
+        /* ==================== Tech Stack Badges ==================== */
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tech-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .tech-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* ==================== Flow Steps ==================== */
+        .flow-steps {
+            position: relative;
+            padding-left: 32px;
+            margin-bottom: 20px;
+        }
+
+        .flow-steps::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--gray-200);
+        }
+
+        .flow-step {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .flow-step::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 4px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--primary);
+            z-index: 1;
+        }
+
+        .flow-step .step-content {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+        }
+
+        .flow-step .step-number {
+            display: inline-block;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 13px;
+            margin-right: 6px;
+        }
+
+        /* ==================== Back to Top ==================== */
+        .back-to-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 800;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* ==================== Responsive ==================== */
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+                box-shadow: 2px 0 16px rgba(0, 0, 0, 0.15);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 24px 20px 60px;
+            }
+
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+            }
+
+            .doc-header .header-subtitle {
+                display: none;
+            }
+
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .doc-header h1 {
+                font-size: 16px;
+            }
+
+            .section-title {
+                font-size: 20px;
+            }
+
+            pre {
+                padding: 14px;
+                font-size: 12px;
+            }
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 850;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== Header ==================== -->
+<header class="doc-header">
+    <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+    <h1>AI 技能编排系统</h1>
+    <span class="header-subtitle">项目文档</span>
+</header>
+
+<!-- ==================== Sidebar ==================== -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <nav>
+        <div class="nav-section-title">目录</div>
+        <ul>
+            <li><a href="#section-1">1. 项目概述</a></li>
+            <li><a href="#section-2">2. 项目结构</a></li>
+            <li>
+                <a href="#section-3">3. 文件详解</a>
+                <ul class="nav-sub">
+                    <li><a href="#subsection-3-1">后端 Java 文件</a></li>
+                    <li><a href="#subsection-3-2">前端文件</a></li>
+                    <li><a href="#subsection-3-3">配置文件</a></li>
+                    <li><a href="#subsection-3-4">部署文件</a></li>
+                    <li><a href="#subsection-3-5">示例技能</a></li>
+                </ul>
+            </li>
+            <li><a href="#section-4">4. API 接口文档</a></li>
+            <li>
+                <a href="#section-5">5. 执行流程文档</a>
+                <ul class="nav-sub">
+                    <li><a href="#flow-5-1">5.1 技能上传</a></li>
+                    <li><a href="#flow-5-2">5.2 技能搜索</a></li>
+                    <li><a href="#flow-5-3">5.3 AI自动选择执行</a></li>
+                    <li><a href="#flow-5-4">5.4 技能执行</a></li>
+                    <li><a href="#flow-5-5">5.5 多轮编排</a></li>
+                    <li><a href="#flow-5-6">5.6 技能文件查看</a></li>
+                    <li><a href="#flow-5-7">5.7 应用启动</a></li>
+                </ul>
+            </li>
+            <li><a href="#section-6">6. 配置说明</a></li>
+            <li><a href="#section-7">7. 技能格式说明</a></li>
+            <li><a href="#section-8">8. 部署说明</a></li>
+        </ul>
+    </nav>
+</aside>
+
+<!-- ==================== Main Content ==================== -->
+<main class="main-content">
+
+<!-- ==================== Section 1: Project Overview ==================== -->
+<section class="section" id="section-1">
+    <div class="section-header s1">
+        <span class="section-number">1</span>
+        <span class="section-title">项目概述</span>
+    </div>
+
+    <h4>项目名称</h4>
+    <p><strong>AI 技能编排系统</strong> (springboot-ai-skill)</p>
+
+    <h4>技术栈</h4>
+    <div class="tech-stack">
+        <span class="tech-badge"><span class="dot" style="background:var(--success)"></span> SpringBoot 2.7.18</span>
+        <span class="tech-badge"><span class="dot" style="background:var(--warning)"></span> JDK 8</span>
+        <span class="tech-badge"><span class="dot" style="background:var(--info)"></span> FTP 存储 (commons-net)</span>
+        <span class="tech-badge"><span class="dot" style="background:var(--primary)"></span> OpenAI 兼容 API</span>
+        <span class="tech-badge"><span class="dot" style="background:var(--purple)"></span> 原生 HTML/CSS/JS 前端</span>
+        <span class="tech-badge"><span class="dot" style="background:#ec4899"></span> SnakeYAML</span>
+        <span class="tech-badge"><span class="dot" style="background:#f97316"></span> commons-compress</span>
+    </div>
+
+    <h4>核心功能</h4>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 200px;">功能</th>
+                <th>说明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>技能上传</strong></td>
+                <td>支持上传 <code>skill.md</code> 及附件文件，或上传压缩包（<code>.zip</code> / <code>.tar.gz</code> / <code>.tar</code>）自动解压校验。文件通过 FTP 持久化存储。</td>
+            </tr>
+            <tr>
+                <td><strong>技能管理</strong></td>
+                <td>列出所有技能、查看技能详情、递归浏览技能目录下全部文件、在线读取文件内容（文本文件直接显示，二进制文件返回 Base64）、删除技能。</td>
+            </tr>
+            <tr>
+                <td><strong>AI自动选择技能</strong></td>
+                <td>用户输入需求描述，系统通过 AI 语义匹配自动选择最佳技能执行，无需手动搜索。AI 不可用时回退到关键词搜索。</td>
+            </tr>
+            <tr>
+                <td><strong>技能执行</strong></td>
+                <td>支持文本输入和文件上传执行。构建 Prompt 模板（替换 <code>{input}</code> / <code>{materials}</code> / <code>{scripts}</code> 占位符），调用 OpenAI 兼容 API 获取结果。</td>
+            </tr>
+            <tr>
+                <td><strong>多轮编排</strong></td>
+                <td>支持技能链式编排：第一轮执行后可继续下一轮（使用上一轮输出作为输入）、返回上一轮、重新执行当前轮。每轮可使用不同技能。</td>
+            </tr>
+            <tr>
+                <td><strong>技能搜索</strong></td>
+                <td>AI 语义匹配 + 关键词搜索双模式。关键词搜索支持中英文双语映射（50+ 词条）、CJK 字符匹配、多维度评分排序。</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="info-box info">
+        <div class="info-box-title">架构特点</div>
+        <p>系统采用存储抽象层设计（<code>StorageService</code> 接口），当前实现为 FTP 存储。技能元数据以 <code>meta.json</code> 缓存在 FTP 和内存中（<code>ConcurrentHashMap</code>）。执行会话存储在内存中，支持多轮操作和分支回溯。</p>
+    </div>
+</section>
+
+<!-- ==================== Section 2: Project Structure ==================== -->
+<section class="section" id="section-2">
+    <div class="section-header s2">
+        <span class="section-number">2</span>
+        <span class="section-title">项目结构</span>
+    </div>
+
+    <div class="file-tree">
+<span class="dir">springboot-ai-skill/</span>
+├── <span class="dir">src/</span>
+│   └── <span class="dir">main/</span>
+│       ├── <span class="dir">java/</span>
+│       │   └── <span class="dir">com/example/aiskill/</span>
+│       │       ├── <span class="highlight">AiSkillApplication.java</span>          <span class="comment"># Spring Boot 启动类</span>
+│       │       ├── <span class="dir">config/</span>
+│       │       │   ├── <span class="highlight">AiConfig.java</span>                   <span class="comment"># AI配置 + RestTemplate Bean</span>
+│       │       │   └── <span class="highlight">CorsConfig.java</span>                 <span class="comment"># CORS跨域配置</span>
+│       │       ├── <span class="dir">controller/</span>
+│       │       │   ├── <span class="highlight">SkillController.java</span>           <span class="comment"># 技能管理接口</span>
+│       │       │   └── <span class="highlight">ExecutionController.java</span>       <span class="comment"># 执行编排接口</span>
+│       │       ├── <span class="dir">model/</span>
+│       │       │   ├── <span class="highlight">Skill.java</span>                     <span class="comment"># 技能模型</span>
+│       │       │   ├── <span class="highlight">ExecutionSession.java</span>          <span class="comment"># 执行会话模型</span>
+│       │       │   ├── <span class="highlight">ExecutionRound.java</span>            <span class="comment"># 执行轮次模型</span>
+│       │       │   ├── <span class="highlight">ApiResult.java</span>                 <span class="comment"># 统一响应模型</span>
+│       │       │   └── <span class="dir">dto/</span>
+│       │       │       ├── <span class="highlight">ExecuteRequest.java</span>        <span class="comment"># 执行请求DTO</span>
+│       │       │       ├── <span class="highlight">ContinueRequest.java</span>       <span class="comment"># 继续请求DTO</span>
+│       │       │       └── <span class="highlight">SearchRequest.java</span>          <span class="comment"># 搜索请求DTO</span>
+│       │       ├── <span class="dir">service/</span>
+│       │       │   ├── <span class="highlight">SkillService.java</span>              <span class="comment"># 技能服务（核心）</span>
+│       │       │   ├── <span class="highlight">AiService.java</span>                 <span class="comment"># AI服务</span>
+│       │       │   └── <span class="highlight">ExecutionService.java</span>          <span class="comment"># 执行服务</span>
+│       │       └── <span class="dir">storage/</span>
+│       │           ├── <span class="highlight">StorageService.java</span>            <span class="comment"># 存储抽象接口</span>
+│       │           ├── <span class="highlight">FtpStorageService.java</span>         <span class="comment"># FTP存储实现</span>
+│       │           ├── <span class="highlight">StorageConfig.java</span>             <span class="comment"># 存储配置Bean</span>
+│       │           └── <span class="highlight">FileInfo.java</span>                  <span class="comment"># 文件信息模型</span>
+│       └── <span class="dir">resources/</span>
+│           ├── <span class="highlight">application.yml</span>                     <span class="comment"># 应用配置</span>
+│           └── <span class="dir">static/</span>                              <span class="comment"># 前端静态资源</span>
+│               ├── <span class="highlight">index.html</span>                     <span class="comment"># 主页面</span>
+│               ├── <span class="dir">css/</span>
+│               │   └── <span class="highlight">style.css</span>                   <span class="comment"># 样式表</span>
+│               └── <span class="dir">js/</span>
+│                   └── <span class="highlight">app.js</span>                       <span class="comment"># 前端逻辑</span>
+├── <span class="dir">samples/</span>                                    <span class="comment"># 示例技能</span>
+│   ├── <span class="dir">skill-summarizer/</span>
+│   │   └── <span class="file">skill.md</span>                             <span class="comment"># 总结技能示例</span>
+│   └── <span class="dir">skill-translator/</span>
+│       ├── <span class="file">skill.md</span>                               <span class="comment"># 翻译技能示例</span>
+│       ├── <span class="file">glossary.txt</span>                           <span class="comment"># 术语表（材料文件）</span>
+│       └── <span class="file">preprocess.py</span>                          <span class="comment"># 预处理脚本（脚本文件）</span>
+├── <span class="highlight">pom.xml</span>                                     <span class="comment"># Maven配置</span>
+├── <span class="highlight">Dockerfile.backend</span>                          <span class="comment"># 后端Docker构建</span>
+├── <span class="highlight">docker-compose.yml</span>                          <span class="comment"># Docker Compose编排</span>
+├── <span class="highlight">.env.example</span>                                <span class="comment"># 环境变量示例</span>
+├── <span class="highlight">.dockerignore</span>                              <span class="comment"># Docker构建忽略</span>
+└── <span class="highlight">run.sh</span>                                      <span class="comment"># 本地启动脚本</span>
+    </div>
+</section>
+
+<!-- ==================== Section 3: File Details ==================== -->
+<section class="section" id="section-3">
+    <div class="section-header s3">
+        <span class="section-number">3</span>
+        <span class="section-title">文件详解</span>
+    </div>
+
+    <!-- 3.1 Backend Java Files -->
+    <div class="subsection" id="subsection-3-1">
+        <h3 class="subsection-title">3.1 后端 Java 文件</h3>
+
+        <!-- AiSkillApplication.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/AiSkillApplication.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">Spring Boot 应用启动类，使用 <code>@SpringBootApplication</code> 注解开启自动配置和组件扫描。</p>
+            <div class="file-key-content">
+                <h5>关键内容</h5>
+                <pre><code><span class="tok-ann">@SpringBootApplication</span>
+<span class="tok-key">public class</span> <span class="tok-typ">AiSkillApplication</span> {
+    <span class="tok-key">public static void</span> main(String[] args) {
+        SpringApplication.run(AiSkillApplication.class, args);
+    }
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- AiConfig.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/config/AiConfig.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">AI 配置类，使用 <code>@ConfigurationProperties(prefix = "ai")</code> 绑定 <code>application.yml</code> 中的 AI 配置项。同时提供 <code>RestTemplate</code> Bean，配置连接超时和读取超时。</p>
+            <div class="file-key-content">
+                <h5>配置字段</h5>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>baseUrl</code></td><td>String</td><td>AI API 基础 URL（OpenAI 兼容）</td></tr>
+                        <tr><td><code>apiKey</code></td><td>String</td><td>API 密钥</td></tr>
+                        <tr><td><code>model</code></td><td>String</td><td>默认模型名称</td></tr>
+                        <tr><td><code>temperature</code></td><td>Double</td><td>温度参数（默认 0.7）</td></tr>
+                        <tr><td><code>maxTokens</code></td><td>Integer</td><td>最大 Token 数</td></tr>
+                        <tr><td><code>timeout</code></td><td>Integer</td><td>超时时间（毫秒）</td></tr>
+                        <tr><td><code>think</code></td><td>Boolean</td><td>是否启用推理模式（Ollama/Qwen3）</td></tr>
+                    </tbody>
+                </table>
+                <h5>RestTemplate Bean</h5>
+                <pre><code><span class="tok-ann">@Bean</span>
+<span class="tok-key">public</span> <span class="tok-typ">RestTemplate</span> restTemplate() {
+    <span class="tok-typ">SimpleClientHttpRequestFactory</span> factory = <span class="tok-key">new</span> <span class="tok-typ">SimpleClientHttpRequestFactory</span>();
+    factory.setConnectTimeout(timeout != <span class="tok-key">null</span> ? timeout : <span class="tok-num">30000</span>);
+    factory.setReadTimeout(timeout != <span class="tok-key">null</span> ? timeout : <span class="tok-num">60000</span>);
+    <span class="tok-key">return new</span> <span class="tok-typ">RestTemplate</span>(factory);
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- CorsConfig.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/config/CorsConfig.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">CORS 跨域配置，实现 <code>WebMvcConfigurer</code> 接口。允许 <code>/api/**</code> 路径的所有来源跨域访问，支持 GET/POST/PUT/DELETE/OPTIONS 方法。</p>
+            <div class="file-key-content">
+                <h5>关键配置</h5>
+                <pre><code>registry.addMapping(<span class="tok-str">"/api/**"</span>)
+    .allowedOriginPatterns(<span class="tok-str">"*"</span>)
+    .allowedMethods(<span class="tok-str">"GET"</span>, <span class="tok-str">"POST"</span>, <span class="tok-str">"PUT"</span>, <span class="tok-str">"DELETE"</span>, <span class="tok-str">"OPTIONS"</span>)
+    .allowedHeaders(<span class="tok-str">"*"</span>)
+    .allowCredentials(<span class="tok-key">true</span>)
+    .maxAge(<span class="tok-num">3600</span>);</code></pre>
+            </div>
+        </div>
+
+        <!-- SkillController.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/controller/SkillController.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">技能管理控制器，基路径 <code>/api/skills</code>。负责技能的上传、列表、详情、文件浏览、文件内容读取、删除、搜索及 AI 状态查询。</p>
+            <div class="file-key-content">
+                <h5>接口列表</h5>
+                <table>
+                    <thead><tr><th>方法</th><th>路径</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>POST</td><td><code>/api/skills/upload</code></td><td>上传技能（multipart/form-data）</td></tr>
+                        <tr><td>GET</td><td><code>/api/skills</code></td><td>列出所有技能</td></tr>
+                        <tr><td>GET</td><td><code>/api/skills/{id}</code></td><td>获取技能详情</td></tr>
+                        <tr><td>GET</td><td><code>/api/skills/{id}/files/list</code></td><td>列出技能文件（递归）</td></tr>
+                        <tr><td>GET</td><td><code>/api/skills/{id}/files/content</code></td><td>读取文件内容（参数 <code>path</code>）</td></tr>
+                        <tr><td>DELETE</td><td><code>/api/skills/{id}</code></td><td>删除技能</td></tr>
+                        <tr><td>POST</td><td><code>/api/skills/search</code></td><td>搜索技能</td></tr>
+                        <tr><td>GET</td><td><code>/api/skills/ai-status</code></td><td>查询 AI 配置状态</td></tr>
+                    </tbody>
+                </table>
+                <p>文件读取接口通过 <code>isBinaryFile()</code> 方法判断文件类型，二进制文件（图片、压缩包、PDF 等）返回 Base64 编码内容，文本文件返回 UTF-8 字符串。</p>
+            </div>
+        </div>
+
+        <!-- ExecutionController.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/controller/ExecutionController.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">执行编排控制器，基路径 <code>/api/sessions</code>。负责技能执行的启动、AI 自动选择执行、多轮编排（继续/返回/重新执行）及会话状态查询。</p>
+            <div class="file-key-content">
+                <h5>接口列表</h5>
+                <table>
+                    <thead><tr><th>方法</th><th>路径</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>POST</td><td><code>/api/sessions</code></td><td>启动执行（JSON Body）</td></tr>
+                        <tr><td>POST</td><td><code>/api/sessions/with-files</code></td><td>带文件执行（multipart）</td></tr>
+                        <tr><td>POST</td><td><code>/api/sessions/auto-execute</code></td><td>AI 自动选择执行（文本）</td></tr>
+                        <tr><td>POST</td><td><code>/api/sessions/auto-execute-with-files</code></td><td>AI 自动选择带文件执行</td></tr>
+                        <tr><td>POST</td><td><code>/api/sessions/{id}/continue</code></td><td>继续下一轮（JSON）</td></tr>
+                        <tr><td>POST</td><td><code>/api/sessions/{id}/continue-with-files</code></td><td>带文件继续下一轮</td></tr>
+                        <tr><td>POST</td><td><code>/api/sessions/{id}/back</code></td><td>返回上一轮</td></tr>
+                        <tr><td>POST</td><td><code>/api/sessions/{id}/reexecute</code></td><td>重新执行当前轮</td></tr>
+                        <tr><td>GET</td><td><code>/api/sessions/{id}</code></td><td>获取会话状态</td></tr>
+                    </tbody>
+                </table>
+                <p>带文件执行的接口通过私有方法 <code>buildInputWithFiles()</code> 将文本输入与上传文件内容拼接，文件内容超过 50000 字符时自动截断。AI 自动选择执行会返回 <code>autoSelectedSkill</code>、<code>selectedSkillName</code> 等额外字段。</p>
+            </div>
+        </div>
+
+        <!-- Skill.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/model/Skill.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">技能模型，使用 Lombok <code>@Data @Builder</code> 注解。包含技能元数据和文件列表。</p>
+            <div class="file-key-content">
+                <h5>字段</h5>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>id</code></td><td>String</td><td>技能ID（格式 <code>skill_时间戳</code>）</td></tr>
+                        <tr><td><code>name</code></td><td>String</td><td>技能名称</td></tr>
+                        <tr><td><code>description</code></td><td>String</td><td>技能描述</td></tr>
+                        <tr><td><code>tags</code></td><td>List&lt;String&gt;</td><td>标签列表</td></tr>
+                        <tr><td><code>inputType</code></td><td>String</td><td>输入类型</td></tr>
+                        <tr><td><code>outputType</code></td><td>String</td><td>输出类型</td></tr>
+                        <tr><td><code>model</code></td><td>String</td><td>指定模型（覆盖默认）</td></tr>
+                        <tr><td><code>temperature</code></td><td>Double</td><td>温度参数</td></tr>
+                        <tr><td><code>maxTokens</code></td><td>Integer</td><td>最大Token数</td></tr>
+                        <tr><td><code>promptTemplate</code></td><td>String</td><td>Prompt模板（skill.md 正文部分）</td></tr>
+                        <tr><td><code>files</code></td><td>List&lt;SkillFile&gt;</td><td>文件列表</td></tr>
+                        <tr><td><code>storagePath</code></td><td>String</td><td>FTP存储路径</td></tr>
+                        <tr><td><code>createdAt</code></td><td>LocalDateTime</td><td>创建时间</td></tr>
+                    </tbody>
+                </table>
+                <h5>内部类 SkillFile</h5>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>name</code></td><td>String</td><td>文件名</td></tr>
+                        <tr><td><code>type</code></td><td>String</td><td>类型（material | script | md | other）</td></tr>
+                        <tr><td><code>size</code></td><td>long</td><td>文件大小（字节）</td></tr>
+                        <tr><td><code>relativePath</code></td><td>String</td><td>相对于技能目录的路径</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ExecutionSession.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/model/ExecutionSession.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">执行会话模型，管理多轮执行的完整状态。</p>
+            <div class="file-key-content">
+                <h5>字段</h5>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>sessionId</code></td><td>String</td><td>会话ID（格式 <code>session_UUID前8位</code>）</td></tr>
+                        <tr><td><code>rounds</code></td><td>List&lt;ExecutionRound&gt;</td><td>执行轮次列表</td></tr>
+                        <tr><td><code>currentRound</code></td><td>int</td><td>当前轮次编号</td></tr>
+                        <tr><td><code>createdAt</code></td><td>LocalDateTime</td><td>创建时间</td></tr>
+                    </tbody>
+                </table>
+                <h5>方法</h5>
+                <table>
+                    <thead><tr><th>方法</th><th>返回值</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>canGoBack()</code></td><td>boolean</td><td>当前轮次 &gt; 1 时可返回</td></tr>
+                        <tr><td><code>canContinue()</code></td><td>boolean</td><td>最后一轮有输出时可继续</td></tr>
+                        <tr><td><code>getCurrentOutput()</code></td><td>String</td><td>获取当前轮次的输出</td></tr>
+                        <tr><td><code>getCurrentInput()</code></td><td>String</td><td>获取当前轮次的输入</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ExecutionRound.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/model/ExecutionRound.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">执行轮次模型，记录单轮执行的完整信息。</p>
+            <div class="file-key-content">
+                <h5>字段</h5>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>round</code></td><td>int</td><td>轮次编号（从1开始）</td></tr>
+                        <tr><td><code>skillId</code></td><td>String</td><td>使用的技能ID</td></tr>
+                        <tr><td><code>skillName</code></td><td>String</td><td>技能名称</td></tr>
+                        <tr><td><code>skillDescription</code></td><td>String</td><td>技能描述</td></tr>
+                        <tr><td><code>input</code></td><td>String</td><td>输入内容</td></tr>
+                        <tr><td><code>output</code></td><td>String</td><td>AI输出结果</td></tr>
+                        <tr><td><code>continuedFromPrevious</code></td><td>boolean</td><td>是否使用上一轮输出作为输入</td></tr>
+                        <tr><td><code>timestamp</code></td><td>LocalDateTime</td><td>执行时间</td></tr>
+                        <tr><td><code>status</code></td><td>String</td><td>状态（running | success | error）</td></tr>
+                        <tr><td><code>errorMessage</code></td><td>String</td><td>错误信息</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ApiResult.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/model/ApiResult.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">统一 API 响应模型，泛型类 <code>ApiResult&lt;T&gt;</code>。所有接口返回统一格式。</p>
+            <div class="file-key-content">
+                <h5>字段与静态方法</h5>
+                <table>
+                    <thead><tr><th>字段/方法</th><th>类型</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>code</code></td><td>int</td><td>状态码（200成功）</td></tr>
+                        <tr><td><code>message</code></td><td>String</td><td>消息</td></tr>
+                        <tr><td><code>data</code></td><td>T</td><td>数据载荷</td></tr>
+                        <tr><td><code>success(data)</code></td><td>ApiResult&lt;T&gt;</td><td>成功响应（code=200）</td></tr>
+                        <tr><td><code>success(message, data)</code></td><td>ApiResult&lt;T&gt;</td><td>成功响应带消息</td></tr>
+                        <tr><td><code>error(code, message)</code></td><td>ApiResult&lt;T&gt;</td><td>错误响应</td></tr>
+                        <tr><td><code>error(message)</code></td><td>ApiResult&lt;T&gt;</td><td>错误响应（code=500）</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ExecuteRequest.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/model/dto/ExecuteRequest.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">执行请求 DTO，用于 <code>POST /api/sessions</code> 和 <code>POST /api/sessions/auto-execute</code> 接口。</p>
+            <div class="file-key-content">
+                <h5>字段</h5>
+                <ul>
+                    <li><code>skillId</code> (String) - 技能ID（auto-execute 时可省略）</li>
+                    <li><code>input</code> (String) - 输入内容</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ContinueRequest.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/model/dto/ContinueRequest.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">继续请求 DTO，用于 <code>POST /api/sessions/{id}/continue</code> 接口。</p>
+            <div class="file-key-content">
+                <h5>字段</h5>
+                <ul>
+                    <li><code>skillId</code> (String) - 下一轮使用的技能ID</li>
+                    <li><code>input</code> (String) - 可选自定义输入，为 null 时使用上一轮输出</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SearchRequest.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/model/dto/SearchRequest.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">搜索请求 DTO，用于 <code>POST /api/skills/search</code> 接口。</p>
+            <div class="file-key-content">
+                <h5>字段</h5>
+                <ul>
+                    <li><code>description</code> (String) - 搜索描述文本</li>
+                    <li><code>useAi</code> (Boolean) - 是否使用AI语义匹配（默认 true）</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SkillService.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/service/SkillService.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">技能服务核心类，负责技能的上传、加载、搜索、AI 自动选择和文件读取。使用 <code>ConcurrentHashMap</code> 维护内存缓存 <code>skillCache</code>。</p>
+            <div class="file-key-content">
+                <h5>核心功能</h5>
+                <table>
+                    <thead><tr><th>方法</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>init()</code></td><td><code>@PostConstruct</code> 初始化，从 FTP 加载所有技能到缓存</td></tr>
+                        <tr><td><code>uploadSkill(files)</code></td><td>上传技能，自动判断压缩包/散文件</td></tr>
+                        <tr><td><code>uploadSkillFromArchive()</code></td><td>压缩包上传：解压到临时目录 &rarr; 查找 skill.md &rarr; 验证 &rarr; 存储到 FTP</td></tr>
+                        <tr><td><code>uploadSkillFromLooseFiles()</code></td><td>散文件上传：查找 skill.md &rarr; 解析 &rarr; 存储到 FTP</td></tr>
+                        <tr><td><code>parseSkillMd()</code></td><td>解析 skill.md 的 YAML front matter 和正文</td></tr>
+                        <tr><td><code>loadSkillFromStorage()</code></td><td>从 FTP 加载技能，优先读 meta.json，回退解析 skill.md</td></tr>
+                        <tr><td><code>searchSkills()</code></td><td>搜索技能：AI 语义匹配优先，失败回退关键词搜索</td></tr>
+                        <tr><td><code>autoSelectSkill()</code></td><td>AI 自动选择最佳技能</td></tr>
+                        <tr><td><code>keywordSearch()</code></td><td>关键词搜索：英文提取 + 中英双语映射(50+词条) + CJK匹配 + 多维度评分</td></tr>
+                        <tr><td><code>readMaterials()</code></td><td>读取技能所有材料文件内容</td></tr>
+                        <tr><td><code>readScripts()</code></td><td>读取技能所有脚本文件内容</td></tr>
+                        <tr><td><code>listAllSkillFiles()</code></td><td>递归列出技能目录下全部文件</td></tr>
+                        <tr><td><code>readSkillFile()</code></td><td>读取技能内指定文件内容</td></tr>
+                        <tr><td><code>deleteSkill()</code></td><td>删除技能（缓存 + FTP）</td></tr>
+                    </tbody>
+                </table>
+                <h5>支持的压缩格式</h5>
+                <p><code>.zip</code> / <code>.tar.gz</code> / <code>.tgz</code> / <code>.tar</code>，使用 commons-compress 库解压。解压时过滤 macOS 元数据文件（<code>._*</code>、<code>.DS_Store</code>、<code>__MACOSX</code>）。</p>
+                <h5>文件分类规则</h5>
+                <ul>
+                    <li><strong>脚本 (script)</strong>: .py, .sh, .js, .rb, .pl, .go, .java, .bat</li>
+                    <li><strong>材料 (material)</strong>: .txt, .md, .pdf, .docx, .doc, .csv, .json, .xml, .html, .yaml, .yml</li>
+                    <li><strong>其他 (other)</strong>: 不属于上述类别的文件</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- AiService.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/service/AiService.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">AI 服务，调用 OpenAI 兼容 API 的 <code>/chat/completions</code> 接口。支持 reasoning_content 回退解析，提供技能语义搜索。</p>
+            <div class="file-key-content">
+                <h5>核心方法</h5>
+                <table>
+                    <thead><tr><th>方法</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>chat(systemPrompt, userMessage, model, temperature, maxTokens)</code></td><td>调用 AI Chat Completions API</td></tr>
+                        <tr><td><code>searchSkillsByAi(description, allSkills)</code></td><td>AI 语义搜索技能，返回排序后的技能ID列表</td></tr>
+                        <tr><td><code>isConfigured()</code></td><td>检查 AI 是否已配置（apiKey 非空且非占位符）</td></tr>
+                    </tbody>
+                </table>
+                <h5>reasoning_content 回退解析</h5>
+                <p>部分推理模型（GLM、Qwen3）在 think 模式下可能将输出放在 <code>reasoning_content</code> 或 <code>reasoning</code> 字段而非 <code>content</code>。解析顺序：</p>
+                <pre><code><span class="tok-com">// 1. 优先读取 content</span>
+String content = choices.get(<span class="tok-num">0</span>).path(<span class="tok-str">"message"</span>).path(<span class="tok-str">"content"</span>).asText(<span class="tok-str">""</span>);
+<span class="tok-com">// 2. content 为空时回退到 reasoning_content</span>
+<span class="tok-key">if</span> (content == <span class="tok-key">null</span> || content.trim().isEmpty()) {
+    content = choices.get(<span class="tok-num">0</span>).path(<span class="tok-str">"message"</span>).path(<span class="tok-str">"reasoning_content"</span>).asText(<span class="tok-str">""</span>);
+}
+<span class="tok-com">// 3. 仍为空时回退到 reasoning</span>
+<span class="tok-key">if</span> (content == <span class="tok-key">null</span> || content.trim().isEmpty()) {
+    content = choices.get(<span class="tok-num">0</span>).path(<span class="tok-str">"message"</span>).path(<span class="tok-str">"reasoning"</span>).asText(<span class="tok-str">""</span>);
+}</code></pre>
+                <h5>技能语义搜索提示词</h5>
+                <p>构建技能列表提示词（ID/名称/描述/标签），要求 AI 按匹配度排序返回技能ID列表，温度设为 0.3 以获得稳定结果。</p>
+            </div>
+        </div>
+
+        <!-- ExecutionService.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/service/ExecutionService.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">执行服务，管理执行会话的生命周期。使用 <code>ConcurrentHashMap</code> 存储会话，支持多轮编排。</p>
+            <div class="file-key-content">
+                <h5>核心方法</h5>
+                <table>
+                    <thead><tr><th>方法</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>startSession(skillId, input)</code></td><td>创建新会话并执行第一轮</td></tr>
+                        <tr><td><code>continueToNext(sessionId, skillId, input)</code></td><td>继续下一轮，input 为 null 时使用上一轮输出。截断当前轮之后的轮次（分支）</td></tr>
+                        <tr><td><code>goBack(sessionId)</code></td><td>返回上一轮，移除当前轮次</td></tr>
+                        <tr><td><code>reExecute(sessionId, input)</code></td><td>重新执行当前轮，可使用新输入</td></tr>
+                        <tr><td><code>executeSkillInternal()</code></td><td>内部方法：构建 Prompt &rarr; 调用 AI &rarr; 返回 ExecutionRound</td></tr>
+                        <tr><td><code>buildPrompt()</code></td><td>构建完整 Prompt，替换占位符</td></tr>
+                    </tbody>
+                </table>
+                <h5>Prompt 模板占位符替换</h5>
+                <pre><code>String prompt = template;
+<span class="tok-com">// 替换用户输入</span>
+prompt = prompt.replace(<span class="tok-str">"{input}"</span>, input != <span class="tok-key">null</span> ? input : <span class="tok-str">""</span>);
+<span class="tok-com">// 替换材料文件内容</span>
+prompt = prompt.replace(<span class="tok-str">"{materials}"</span>, materials != <span class="tok-key">null</span> ? materials : <span class="tok-str">"（无参考资料）"</span>);
+<span class="tok-com">// 替换脚本文件内容</span>
+prompt = prompt.replace(<span class="tok-str">"{scripts}"</span>, scripts != <span class="tok-key">null</span> ? scripts : <span class="tok-str">"（无脚本文件）"</span>);</code></pre>
+            </div>
+        </div>
+
+        <!-- StorageService.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/storage/StorageService.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">存储抽象接口，定义文件操作的标准 API。所有路径相对于存储根目录，使用 <code>/</code> 作为分隔符。</p>
+            <div class="file-key-content">
+                <h5>接口方法</h5>
+                <table>
+                    <thead><tr><th>方法</th><th>返回值</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>store(path, content)</code></td><td>void</td><td>存储文件（自动创建父目录）</td></tr>
+                        <tr><td><code>read(path)</code></td><td>byte[]</td><td>读取文件内容</td></tr>
+                        <tr><td><code>exists(path)</code></td><td>boolean</td><td>检查文件/目录是否存在</td></tr>
+                        <tr><td><code>delete(path)</code></td><td>void</td><td>删除文件/目录（递归）</td></tr>
+                        <tr><td><code>createDirectory(path)</code></td><td>void</td><td>创建目录（含父目录）</td></tr>
+                        <tr><td><code>listDirectories(dirPath)</code></td><td>List&lt;String&gt;</td><td>列出直接子目录名</td></tr>
+                        <tr><td><code>listFiles(dirPath)</code></td><td>List&lt;FileInfo&gt;</td><td>递归列出所有文件</td></tr>
+                        <tr><td><code>init()</code></td><td>void</td><td>初始化存储后端</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FtpStorageService.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/storage/FtpStorageService.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">FTP 存储实现，实现 <code>StorageService</code> 接口。每次操作创建短连接（connect/disconnect），支持递归目录创建/删除/文件列表。使用 <code>@PostConstruct</code> 在 Bean 初始化时连接 FTP 并创建根目录。</p>
+            <div class="file-key-content">
+                <h5>连接配置</h5>
+                <ul>
+                    <li>被动模式 (<code>enterLocalPassiveMode()</code>)</li>
+                    <li>二进制文件类型 (<code>FTP.BINARY_FILE_TYPE</code>)</li>
+                    <li>控制连接保活超时 60 秒 (<code>setControlKeepAliveTimeout(60)</code>)</li>
+                </ul>
+                <h5>关键特性</h5>
+                <ul>
+                    <li><strong>短连接模式</strong>：每次操作独立连接，避免连接断开问题</li>
+                    <li><strong>递归目录创建</strong>：<code>makeDirs()</code> 类似 <code>mkdir -p</code></li>
+                    <li><strong>递归删除</strong>：<code>deleteDirectoryRecursive()</code> 深度优先删除目录树</li>
+                    <li><strong>递归文件列表</strong>：<code>listFilesRecursive()</code> 返回所有嵌套文件</li>
+                    <li><strong>路径规范化</strong>：<code>normalizeDir()</code> 和 <code>normalizeRelative()</code> 确保跨平台兼容</li>
+                </ul>
+                <div class="info-box warning">
+                    <div class="info-box-title">注意</div>
+                    <p>此类不使用 <code>@Component</code> 注解，而是由 <code>StorageConfig</code> 手动创建 Bean。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- StorageConfig.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/storage/StorageConfig.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">存储配置类，通过 <code>@Value</code> 读取 <code>storage.ftp.*</code> 配置，创建 <code>FtpStorageService</code> Bean。</p>
+            <div class="file-key-content">
+                <h5>配置读取</h5>
+                <pre><code><span class="tok-ann">@Bean</span>
+<span class="tok-key">public</span> <span class="tok-typ">StorageService</span> storageService(
+        <span class="tok-ann">@Value</span>(<span class="tok-str">"${storage.ftp.host:localhost}"</span>) String host,
+        <span class="tok-ann">@Value</span>(<span class="tok-str">"${storage.ftp.port:21}"</span>) <span class="tok-key">int</span> port,
+        <span class="tok-ann">@Value</span>(<span class="tok-str">"${storage.ftp.username:}"</span>) String username,
+        <span class="tok-ann">@Value</span>(<span class="tok-str">"${storage.ftp.password:}"</span>) String password,
+        <span class="tok-ann">@Value</span>(<span class="tok-str">"${storage.ftp.base-dir:/skills}"</span>) String baseDir) {
+    <span class="tok-key">return new</span> <span class="tok-typ">FtpStorageService</span>(host, port, username, password, baseDir);
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- FileInfo.java -->
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/java/com/example/aiskill/storage/FileInfo.java</span>
+                <span class="file-badge backend">后端</span>
+            </div>
+            <p class="file-purpose">文件信息模型，描述存储中的文件/目录。</p>
+            <div class="file-key-content">
+                <h5>字段</h5>
+                <table>
+                    <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>name</code></td><td>String</td><td>文件名（最后路径段）</td></tr>
+                        <tr><td><code>path</code></td><td>String</td><td>相对路径（使用 / 分隔符）</td></tr>
+                        <tr><td><code>size</code></td><td>long</td><td>文件大小（字节）</td></tr>
+                        <tr><td><code>isDirectory</code></td><td>boolean</td><td>是否为目录</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3.2 Frontend Files -->
+    <div class="subsection" id="subsection-3-2">
+        <h3 class="subsection-title s-info">3.2 前端文件</h3>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/resources/static/index.html</span>
+                <span class="file-badge frontend">前端</span>
+            </div>
+            <p class="file-purpose">主页面，采用三个 Tab 布局：技能上传、技能管理、技能执行。包含拖拽上传区域、技能卡片列表、执行面板、多轮编排控制、文件查看器、加载遮罩和 Toast 提示。</p>
+            <div class="file-key-content">
+                <h5>页面结构</h5>
+                <ul>
+                    <li><strong>Header</strong>：Logo + 标题 + AI 状态徽章</li>
+                    <li><strong>Tab 导航</strong>：技能上传 / 技能管理 / 技能执行</li>
+                    <li><strong>技能上传 Tab</strong>：拖拽上传区 + 文件列表 + 上传按钮</li>
+                    <li><strong>技能管理 Tab</strong>：搜索框 + AI搜索开关 + 技能卡片网格 + 文件查看模态框</li>
+                    <li><strong>技能执行 Tab</strong>：技能选择 + 输入区 + 文件上传 + 执行按钮 + 结果展示 + 多轮控制</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/resources/static/css/style.css</span>
+                <span class="file-badge frontend">前端</span>
+            </div>
+            <p class="file-purpose">全局样式表，使用 CSS 变量定义主题色系，包含全部 UI 组件样式。</p>
+            <div class="file-key-content">
+                <h5>主题色系</h5>
+                <table>
+                    <thead><tr><th>变量</th><th>值</th><th>用途</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>--primary</code></td><td>#4f46e5</td><td>主色（靛蓝）</td></tr>
+                        <tr><td><code>--success</code></td><td>#10b981</td><td>成功色（绿）</td></tr>
+                        <tr><td><code>--warning</code></td><td>#f59e0b</td><td>警告色（橙）</td></tr>
+                        <tr><td><code>--danger</code></td><td>#ef4444</td><td>危险色（红）</td></tr>
+                    </tbody>
+                </table>
+                <p>包含响应式布局、卡片阴影、按钮悬停动画、拖拽区域高亮、代码高亮样式、模态框、Toast 提示等组件样式。</p>
+            </div>
+        </div>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/resources/static/js/app.js</span>
+                <span class="file-badge frontend">前端</span>
+            </div>
+            <p class="file-purpose">主 JavaScript 文件，包含全部前端交互逻辑。</p>
+            <div class="file-key-content">
+                <h5>核心功能模块</h5>
+                <table>
+                    <thead><tr><th>模块</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>API Helper</td><td><code>api()</code> 封装 fetch 请求，自动处理 JSON 和 FormData</td></tr>
+                        <tr><td>Toast / Loading</td><td>全局提示和加载遮罩控制</td></tr>
+                        <tr><td>Tab 导航</td><td>三个 Tab 切换，切换到技能管理时自动加载列表</td></tr>
+                        <tr><td>AI 状态检测</td><td>页面加载时调用 <code>/api/skills/ai-status</code> 更新状态徽章</td></tr>
+                        <tr><td>技能上传</td><td>拖拽 + 点击选文件，文件列表预览，支持压缩包检测</td></tr>
+                        <tr><td>技能管理</td><td>技能卡片渲染、搜索（AI/关键词）、删除、文件浏览</td></tr>
+                        <tr><td>文件查看</td><td>递归文件列表、文本内容显示（语法高亮）、二进制文件提示</td></tr>
+                        <tr><td>技能执行</td><td>技能选择、输入/文件上传、执行、AI自动选择执行</td></tr>
+                        <tr><td>多轮编排</td><td>继续下一轮、返回上一轮、重新执行按钮控制</td></tr>
+                        <tr><td>输出文件检测</td><td><code>detectOutputFiles()</code> 检测 HTML/JSON/CSV/代码块/Markdown 等文件类型，渲染下载和复制按钮</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3.3 Configuration Files -->
+    <div class="subsection" id="subsection-3-3">
+        <h3 class="subsection-title s-warning">3.3 配置文件</h3>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">src/main/resources/application.yml</span>
+                <span class="file-badge config">配置</span>
+            </div>
+            <p class="file-purpose">Spring Boot 应用配置文件，包含服务器端口、AI 配置、FTP 存储配置和日志级别。</p>
+            <div class="file-key-content">
+                <h5>完整配置内容</h5>
+                <pre><code><span class="tok-key">server:</span>
+  <span class="tok-key">port:</span> <span class="tok-num">8080</span>
+  <span class="tok-key">servlet:</span>
+    <span class="tok-key">encoding:</span>
+      <span class="tok-key">charset:</span> UTF-8
+      <span class="tok-key">enabled:</span> <span class="tok-key">true</span>
+      <span class="tok-key">force:</span> <span class="tok-key">true</span>
+
+<span class="tok-key">spring:</span>
+  <span class="tok-key">application:</span>
+    <span class="tok-key">name:</span> ai-skill
+  <span class="tok-key">servlet:</span>
+    <span class="tok-key">multipart:</span>
+      <span class="tok-key">max-file-size:</span> <span class="tok-num">100MB</span>
+      <span class="tok-key">max-request-size:</span> <span class="tok-num">500MB</span>
+  <span class="tok-key">web:</span>
+    <span class="tok-key">resources:</span>
+      <span class="tok-key">static-locations:</span> classpath:/static/
+
+<span class="tok-key">ai:</span>
+  <span class="tok-key">base-url:</span> https://dashscope.aliyuncs.com/compatible-mode/v1
+  <span class="tok-key">api-key:</span> sk-xxx
+  <span class="tok-key">model:</span> glm-5.2
+  <span class="tok-key">temperature:</span> <span class="tok-num">0.7</span>
+  <span class="tok-key">max-tokens:</span> <span class="tok-num">4096</span>
+  <span class="tok-key">timeout:</span> <span class="tok-num">300000</span>
+  <span class="tok-key">think:</span> <span class="tok-key">false</span>
+
+<span class="tok-key">storage:</span>
+  <span class="tok-key">ftp:</span>
+    <span class="tok-key">host:</span> ${FTP_HOST:localhost}
+    <span class="tok-key">port:</span> ${FTP_PORT:21}
+    <span class="tok-key">username:</span> ${FTP_USERNAME:admin}
+    <span class="tok-key">password:</span> ${FTP_PASSWORD:admin}
+    <span class="tok-key">base-dir:</span> ${FTP_BASE_DIR:/skills}
+
+<span class="tok-key">logging:</span>
+  <span class="tok-key">level:</span>
+    <span class="tok-key">com.example.aiskill:</span> DEBUG
+    <span class="tok-key">org.springframework.web:</span> INFO</code></pre>
+            </div>
+        </div>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">pom.xml</span>
+                <span class="file-badge config">配置</span>
+            </div>
+            <p class="file-purpose">Maven 项目配置文件。父 POM 为 <code>spring-boot-starter-parent:2.7.18</code>，Java 版本 1.8。</p>
+            <div class="file-key-content">
+                <h5>依赖列表</h5>
+                <table>
+                    <thead><tr><th>依赖</th><th>版本</th><th>用途</th></tr></thead>
+                    <tbody>
+                        <tr><td>spring-boot-starter-web</td><td>2.7.18 (继承)</td><td>Web 框架</td></tr>
+                        <tr><td>lombok</td><td>继承</td><td>注解简化代码（@Data, @Builder 等）</td></tr>
+                        <tr><td>snakeyaml</td><td>继承</td><td>解析 skill.md 的 YAML front matter</td></tr>
+                        <tr><td>commons-compress</td><td>1.26.1</td><td>解压 ZIP / TAR.GZ / TAR 压缩包</td></tr>
+                        <tr><td>commons-net</td><td>3.10.0</td><td>FTP 客户端</td></tr>
+                        <tr><td>jackson-databind</td><td>继承</td><td>JSON 序列化/反序列化</td></tr>
+                        <tr><td>spring-boot-starter-test</td><td>继承</td><td>测试支持</td></tr>
+                    </tbody>
+                </table>
+                <h5>构建插件</h5>
+                <p>spring-boot-maven-plugin，排除 Lombok 打包。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3.4 Deployment Files -->
+    <div class="subsection" id="subsection-3-4">
+        <h3 class="subsection-title s-purple">3.4 部署文件</h3>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">Dockerfile.backend</span>
+                <span class="file-badge deploy">部署</span>
+            </div>
+            <p class="file-purpose">后端 Docker 多阶段构建文件。Stage 1 使用 Maven 3.8 + OpenJDK 8 编译打包，Stage 2 使用 JRE 8 Slim 运行。</p>
+            <div class="file-key-content">
+                <h5>构建流程</h5>
+                <pre><code><span class="tok-com"># Stage 1: Build</span>
+<span class="tok-key">FROM</span> maven:3.8-openjdk-8 <span class="tok-key">AS</span> builder
+<span class="tok-key">WORKDIR</span> /build
+<span class="tok-key">COPY</span> pom.xml .
+<span class="tok-key">RUN</span> mvn dependency:go-offline -B
+<span class="tok-key">COPY</span> src ./src
+<span class="tok-key">RUN</span> mvn clean package -DskipTests -B
+
+<span class="tok-com"># Stage 2: Runtime</span>
+<span class="tok-key">FROM</span> openjdk:8-jre-slim
+<span class="tok-key">WORKDIR</span> /app
+<span class="tok-key">COPY</span> --from=builder /build/target/*.jar app.jar
+<span class="tok-key">EXPOSE</span> 8080
+<span class="tok-key">ENV</span> JAVA_OPTS=<span class="tok-str">"-Xms256m -Xmx512m"</span>
+<span class="tok-key">ENTRYPOINT</span> [<span class="tok-str">"sh"</span>, <span class="tok-str">"-c"</span>, <span class="tok-str">"java $JAVA_OPTS -jar app.jar"</span>]</code></pre>
+            </div>
+        </div>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">docker-compose.yml</span>
+                <span class="file-badge deploy">部署</span>
+            </div>
+            <p class="file-purpose">Docker Compose 编排文件，仅包含 backend 服务。通过环境变量配置 FTP 和 AI 参数，端口映射 8080:8080，重启策略 <code>unless-stopped</code>。</p>
+            <div class="file-key-content">
+                <h5>环境变量映射</h5>
+                <table>
+                    <thead><tr><th>环境变量</th><th>默认值</th><th>对应配置</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>FTP_HOST</code></td><td>localhost</td><td>storage.ftp.host</td></tr>
+                        <tr><td><code>FTP_PORT</code></td><td>21</td><td>storage.ftp.port</td></tr>
+                        <tr><td><code>FTP_USERNAME</code></td><td>admin</td><td>storage.ftp.username</td></tr>
+                        <tr><td><code>FTP_PASSWORD</code></td><td>admin</td><td>storage.ftp.password</td></tr>
+                        <tr><td><code>FTP_BASE_DIR</code></td><td>/skills</td><td>storage.ftp.base-dir</td></tr>
+                        <tr><td><code>AI_BASE_URL</code></td><td>https://api.openai.com/v1</td><td>ai.base-url</td></tr>
+                        <tr><td><code>AI_API_KEY</code></td><td>(空)</td><td>ai.api-key</td></tr>
+                        <tr><td><code>AI_MODEL</code></td><td>gpt-3.5-turbo</td><td>ai.model</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">.env.example</span>
+                <span class="file-badge deploy">部署</span>
+            </div>
+            <p class="file-purpose">环境变量示例文件，复制为 <code>.env</code> 后填入实际值即可使用。</p>
+            <div class="file-key-content">
+                <pre><code><span class="tok-com"># FTP storage config</span>
+FTP_HOST=localhost
+FTP_PORT=21
+FTP_USERNAME=admin
+FTP_PASSWORD=admin
+FTP_BASE_DIR=/skills
+
+<span class="tok-com"># AI config</span>
+AI_BASE_URL=https://api.openai.com/v1
+AI_API_KEY=
+AI_MODEL=gpt-3.5-turbo</code></pre>
+            </div>
+        </div>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">.dockerignore</span>
+                <span class="file-badge deploy">部署</span>
+            </div>
+            <p class="file-purpose">Docker 构建忽略文件列表，减少构建上下文体积。</p>
+            <div class="file-key-content">
+                <pre><code>target/
+data/
+.git/
+*.md
+!skill.md
+.env
+*.log</code></pre>
+            </div>
+        </div>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">run.sh</span>
+                <span class="file-badge deploy">部署</span>
+            </div>
+            <p class="file-purpose">本地启动脚本，自动查找 Java 8 环境并执行 <code>mvn spring-boot:run</code>。</p>
+            <div class="file-key-content">
+                <h5>脚本逻辑</h5>
+                <ol>
+                    <li>查找标准路径下的 JDK 8（macOS: <code>/Library/Java/JavaVirtualMachines/jdk-1.8.jdk</code>）</li>
+                    <li>查找环境变量 <code>JAVA_HOME_8</code></li>
+                    <li>设置 <code>JAVA_HOME</code> 并输出提示</li>
+                    <li>切换到项目目录执行 <code>mvn spring-boot:run</code></li>
+                </ol>
+                <div class="info-box warning">
+                    <div class="info-box-title">注意</div>
+                    <p>SpringBoot 2.7 不兼容 Java 26+，必须使用 Java 8。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3.5 Sample Skills -->
+    <div class="subsection" id="subsection-3-5">
+        <h3 class="subsection-title s-danger">3.5 示例技能</h3>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">samples/skill-summarizer/skill.md</span>
+                <span class="file-badge sample">示例</span>
+            </div>
+            <p class="file-purpose">智能摘要技能示例。对长文本进行摘要提取，生成一句话总结和 3-5 个关键要点。</p>
+            <div class="file-key-content">
+                <h5>YAML Front Matter</h5>
+                <pre><code>---
+<span class="tok-key">name:</span> 智能摘要助手
+<span class="tok-key">description:</span> 对长文本进行摘要提取，生成简洁的核心内容总结
+<span class="tok-key">tags:</span> [摘要, 总结, NLP]
+<span class="tok-key">input_type:</span> text
+<span class="tok-key">output_type:</span> text
+<span class="tok-key">temperature:</span> <span class="tok-num">0.5</span>
+---</code></pre>
+                <h5>Prompt 模板要点</h5>
+                <ul>
+                    <li>摘要长度不超过原文 30%</li>
+                    <li>保持原文逻辑结构</li>
+                    <li>输出格式：一句话总结 + 关键要点列表</li>
+                    <li>使用 <code>{materials}</code> 和 <code>{input}</code> 占位符</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="file-card">
+            <div class="file-card-header">
+                <span class="file-path">samples/skill-translator/skill.md</span>
+                <span class="file-badge sample">示例</span>
+            </div>
+            <p class="file-purpose">智能翻译技能示例。将输入文本翻译为指定目标语言，支持中英互译。包含材料文件 <code>glossary.txt</code>（术语表）和脚本文件 <code>preprocess.py</code>（预处理脚本）。</p>
+            <div class="file-key-content">
+                <h5>YAML Front Matter</h5>
+                <pre><code>---
+<span class="tok-key">name:</span> 智能翻译助手
+<span class="tok-key">description:</span> 将输入文本翻译为指定目标语言，支持中英互译及多语言翻译
+<span class="tok-key">tags:</span> [翻译, 多语言, NLP]
+<span class="tok-key">input_type:</span> text
+<span class="tok-key">output_type:</span> text
+<span class="tok-key">temperature:</span> <span class="tok-num">0.3</span>
+---</code></pre>
+                <h5>附件文件</h5>
+                <table>
+                    <thead><tr><th>文件</th><th>类型</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>glossary.txt</code></td><td>材料 (material)</td><td>翻译术语表，包含技术术语和缩写的标准译法</td></tr>
+                        <tr><td><code>preprocess.py</code></td><td>脚本 (script)</td><td>文本预处理脚本：去除多余空白、标准化引号、去除 HTML 标签</td></tr>
+                    </tbody>
+                </table>
+                <p>Prompt 模板使用了全部三个占位符：<code>{materials}</code>（术语表）、<code>{input}</code>（用户输入）、<code>{scripts}</code>（预处理脚本参考）。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== Section 4: API Documentation ==================== -->
+<section class="section" id="section-4">
+    <div class="section-header s4">
+        <span class="section-number">4</span>
+        <span class="section-title">API 接口文档</span>
+    </div>
+
+    <div class="info-box info">
+        <div class="info-box-title">统一响应格式</div>
+        <p>所有接口返回 <code>ApiResult&lt;T&gt;</code> 格式：<code>{ "code": 200, "message": "success", "data": T }</code></p>
+    </div>
+
+    <h4>技能管理接口</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:70px;">方法</th>
+                    <th style="width:260px;">路径</th>
+                    <th>描述</th>
+                    <th>请求参数</th>
+                    <th>响应 data</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/skills/upload</code></td>
+                    <td>上传技能</td>
+                    <td>multipart/form-data: <code>files</code> (MultipartFile[]，必含 skill.md 或压缩包)</td>
+                    <td>Skill 对象</td>
+                </tr>
+                <tr>
+                    <td><strong>GET</strong></td>
+                    <td><code>/api/skills</code></td>
+                    <td>列出所有技能</td>
+                    <td>无</td>
+                    <td>List&lt;Map&gt; (技能摘要列表)</td>
+                </tr>
+                <tr>
+                    <td><strong>GET</strong></td>
+                    <td><code>/api/skills/{id}</code></td>
+                    <td>获取技能详情</td>
+                    <td>路径参数: <code>id</code></td>
+                    <td>Skill 对象</td>
+                </tr>
+                <tr>
+                    <td><strong>GET</strong></td>
+                    <td><code>/api/skills/{id}/files/list</code></td>
+                    <td>列出技能文件（递归）</td>
+                    <td>路径参数: <code>id</code></td>
+                    <td>List&lt;Map&gt; (name, path, size, isBinary)</td>
+                </tr>
+                <tr>
+                    <td><strong>GET</strong></td>
+                    <td><code>/api/skills/{id}/files/content</code></td>
+                    <td>读取文件内容</td>
+                    <td>路径参数: <code>id</code>; Query: <code>path</code> (相对路径)</td>
+                    <td>Map (name, size, isBinary, content)</td>
+                </tr>
+                <tr>
+                    <td><strong>DELETE</strong></td>
+                    <td><code>/api/skills/{id}</code></td>
+                    <td>删除技能</td>
+                    <td>路径参数: <code>id</code></td>
+                    <td>null</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/skills/search</code></td>
+                    <td>搜索技能</td>
+                    <td>JSON Body: <code>{ "description": "string", "useAi": true }</code></td>
+                    <td>List&lt;Map&gt; (技能摘要列表)</td>
+                </tr>
+                <tr>
+                    <td><strong>GET</strong></td>
+                    <td><code>/api/skills/ai-status</code></td>
+                    <td>查询AI配置状态</td>
+                    <td>无</td>
+                    <td>Map (configured: boolean)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>执行编排接口</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:70px;">方法</th>
+                    <th style="width:290px;">路径</th>
+                    <th>描述</th>
+                    <th>请求参数</th>
+                    <th>响应 data</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/sessions</code></td>
+                    <td>启动执行</td>
+                    <td>JSON Body: <code>{ "skillId": "string", "input": "string" }</code></td>
+                    <td>Session 响应</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/sessions/with-files</code></td>
+                    <td>带文件执行</td>
+                    <td>multipart: <code>skillId</code>, <code>input</code>, <code>files</code>[]</td>
+                    <td>Session 响应</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/sessions/auto-execute</code></td>
+                    <td>AI自动选择执行</td>
+                    <td>JSON Body: <code>{ "input": "string" }</code></td>
+                    <td>Session 响应 + autoSelectedSkill</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/sessions/auto-execute-with-files</code></td>
+                    <td>AI自动选择带文件执行</td>
+                    <td>multipart: <code>input</code>, <code>files</code>[]</td>
+                    <td>Session 响应 + autoSelectedSkill</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/sessions/{id}/continue</code></td>
+                    <td>继续下一轮</td>
+                    <td>路径: <code>id</code>; JSON: <code>{ "skillId": "string", "input": "string?" }</code></td>
+                    <td>Session 响应</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/sessions/{id}/continue-with-files</code></td>
+                    <td>带文件继续下一轮</td>
+                    <td>路径: <code>id</code>; multipart: <code>skillId</code>, <code>input</code>, <code>files</code>[]</td>
+                    <td>Session 响应</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/sessions/{id}/back</code></td>
+                    <td>返回上一轮</td>
+                    <td>路径参数: <code>id</code></td>
+                    <td>Session 响应</td>
+                </tr>
+                <tr>
+                    <td><strong>POST</strong></td>
+                    <td><code>/api/sessions/{id}/reexecute</code></td>
+                    <td>重新执行当前轮</td>
+                    <td>路径: <code>id</code>; JSON: <code>{ "input": "string?" }</code></td>
+                    <td>Session 响应</td>
+                </tr>
+                <tr>
+                    <td><strong>GET</strong></td>
+                    <td><code>/api/sessions/{id}</code></td>
+                    <td>获取会话状态</td>
+                    <td>路径参数: <code>id</code></td>
+                    <td>Session 响应</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>Session 响应格式</h4>
+    <pre><code>{
+  <span class="tok-str">"code"</span>: <span class="tok-num">200</span>,
+  <span class="tok-str">"message"</span>: <span class="tok-str">"执行成功"</span>,
+  <span class="tok-str">"data"</span>: {
+    <span class="tok-str">"sessionId"</span>: <span class="tok-str">"session_a1b2c3d4"</span>,
+    <span class="tok-str">"currentRound"</span>: <span class="tok-num">1</span>,
+    <span class="tok-str">"rounds"</span>: [ ... ],
+    <span class="tok-str">"canGoBack"</span>: <span class="tok-key">false</span>,
+    <span class="tok-str">"canContinue"</span>: <span class="tok-key">true</span>,
+    <span class="tok-str">"currentOutput"</span>: <span class="tok-str">"AI输出内容..."</span>,
+    <span class="tok-str">"currentInput"</span>: <span class="tok-str">"用户输入..."</span>,
+    <span class="tok-str">"createdAt"</span>: <span class="tok-str">"2025-01-15T10:30:00"</span>,
+    <span class="tok-com">// AI自动选择执行时额外返回:</span>
+    <span class="tok-str">"autoSelectedSkill"</span>: <span class="tok-key">true</span>,
+    <span class="tok-str">"selectedSkillName"</span>: <span class="tok-str">"智能摘要助手"</span>,
+    <span class="tok-str">"selectedSkillId"</span>: <span class="tok-str">"skill_1736820600000"</span>,
+    <span class="tok-str">"selectedSkillDescription"</span>: <span class="tok-str">"..."</span>
+  }
+}</code></pre>
+</section>
+
+<!-- ==================== Section 5: Execution Flows ==================== -->
+<section class="section" id="section-5">
+    <div class="section-header s5">
+        <span class="section-number">5</span>
+        <span class="section-title">执行流程文档</span>
+    </div>
+
+    <!-- 5.1 Skill Upload Flow -->
+    <div class="subsection" id="flow-5-1">
+        <h3 class="subsection-title">5.1 技能上传流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 1</span>用户在前端选择文件（支持拖拽到上传区域或点击选择）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 2</span>前端检查是否包含 <code>skill.md</code> 或压缩包文件（<code>.zip</code> / <code>.tar.gz</code> / <code>.tar</code>）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 3</span>前端发送 <code>POST /api/skills/upload</code>（multipart/form-data），将所有文件作为 <code>files</code> 参数上传
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 4</span><code>SkillService.uploadSkill()</code> 判断上传的文件中是否包含压缩包（<code>isArchive()</code> 方法检查文件扩展名）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 5</span><strong>压缩包路径</strong>：<code>uploadSkillFromArchive()</code> 解压到临时目录 &rarr; 递归收集文件（过滤 macOS 元数据） &rarr; 查找 <code>skill.md</code> &rarr; 验证名称字段
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 6</span><strong>散文件路径</strong>：<code>uploadSkillFromLooseFiles()</code> 直接查找 <code>skill.md</code> &rarr; 验证存在性
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 7</span>调用 <code>parseSkillMd()</code> 解析 <code>skill.md</code> 的 YAML front matter，提取 name、description、tags、input_type、output_type、model、temperature、max_tokens 等元数据，正文部分作为 <code>promptTemplate</code>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 8</span>生成技能ID（<code>skill_时间戳</code>），创建 FTP 目录结构（<code>skillId/</code>、<code>skillId/materials/</code>、<code>skillId/scripts/</code>），通过 <code>StorageService.store()</code> 将文件持久化到 FTP
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 9</span>调用 <code>saveSkillMeta()</code> 将 Skill 对象序列化为 <code>meta.json</code> 存储到 FTP
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 10</span>更新内存缓存 <code>skillCache</code>（<code>ConcurrentHashMap</code>），返回技能信息
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 11</span>前端收到成功响应，显示 Toast 提示，刷新技能列表，自动切换到「技能管理」Tab
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5.2 Skill Search Flow -->
+    <div class="subsection" id="flow-5-2">
+        <h3 class="subsection-title s-info">5.2 技能搜索流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 1</span>用户在技能管理 Tab 的搜索框输入描述文本，可选择开启/关闭 AI 搜索
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 2</span>前端发送 <code>POST /api/skills/search</code>，Body: <code>{ "description": "用户输入", "useAi": true }</code>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 3</span><code>SkillService.searchSkills()</code> 获取所有技能列表，若为空直接返回空列表
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 4</span><strong>AI 语义匹配</strong>（<code>useAi=true</code> 且 AI 已配置）：构建技能列表提示词（ID/名称/描述/标签） &rarr; <code>AiService.chat()</code> 调用 AI API（温度 0.3） &rarr; 解析返回的技能ID列表（按行分割、去除前缀符号）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 5</span>若 AI 匹配返回非空结果，按 AI 返回顺序从缓存中获取 Skill 对象并返回；若 AI 调用失败或返回空，回退到关键词搜索
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 6</span><strong>关键词搜索</strong> <code>keywordSearch()</code>：<br>
+                    &bull; 英文单词提取（正则 <code>[a-z]{2,}</code>）<br>
+                    &bull; 中英文双语映射（50+ 词条，如「翻译」&rarr;translate/translation）<br>
+                    &bull; CJK 字符提取（Unicode 范围 \u4e00-\u9fff）<br>
+                    &bull; 多维度评分：名称匹配(+3) / 描述匹配(+2) / 标签匹配(+2) / 中文名称部分匹配(+3) / 中英映射匹配(+4) / CJK匹配(+1)
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 7</span>过滤评分 &gt; 0 的技能，按评分降序排列，返回排序后的技能列表
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 8</span>前端渲染搜索结果为技能卡片列表
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5.3 AI Auto-Execute Flow -->
+    <div class="subsection" id="flow-5-3">
+        <h3 class="subsection-title s-success">5.3 AI自动选择执行流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 1</span>用户在技能执行 Tab 选择「AI自动选择」模式，输入需求描述文本和可选的上传文件
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 2</span>前端根据是否有文件分别调用：<br>
+                    &bull; 有文件：<code>POST /api/sessions/auto-execute-with-files</code>（multipart）<br>
+                    &bull; 无文件：<code>POST /api/sessions/auto-execute</code>（JSON Body）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 3</span>后端 <code>buildInputWithFiles()</code> 将文本输入和上传文件内容拼接（文件内容超过 50000 字符自动截断）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 4</span><code>SkillService.autoSelectSkill()</code> 调用 AI 语义匹配选择最佳技能。AI 不可用时回退到关键词搜索取第一个结果
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 5</span>若未找到匹配技能，返回 404 错误提示
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 6</span><code>ExecutionService.startSession()</code> 创建新会话（生成 sessionId），调用 <code>executeSkillInternal()</code> 执行第一轮
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 7</span><code>executeSkillInternal()</code> 调用 <code>buildPrompt()</code> 构建 Prompt：读取技能的材料文件和脚本文件内容，替换 <code>{input}</code> / <code>{materials}</code> / <code>{scripts}</code> 占位符
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 8</span><code>AiService.chat()</code> 调用 OpenAI 兼容 API 的 <code>/chat/completions</code> 接口，发送 system prompt + user message，获取 AI 响应（支持 reasoning_content 回退）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 9</span>返回会话信息，额外包含 <code>autoSelectedSkill: true</code>、<code>selectedSkillName</code>、<code>selectedSkillId</code>、<code>selectedSkillDescription</code>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 10</span>前端显示 AI 选择的技能名称和执行结果，调用 <code>detectOutputFiles()</code> 检测输出中的文件类型（HTML/JSON/CSV/代码块/Markdown 等），渲染文件列表支持下载和复制
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5.4 Skill Execution Flow -->
+    <div class="subsection" id="flow-5-4">
+        <h3 class="subsection-title s-warning">5.4 技能执行流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 1</span>用户在技能执行 Tab 手动选择技能，输入描述文本和可选的上传文件
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 2</span>前端根据是否有文件分别调用：<br>
+                    &bull; 有文件：<code>POST /api/sessions/with-files</code>（multipart: skillId, input, files[]）<br>
+                    &bull; 无文件：<code>POST /api/sessions</code>（JSON Body: skillId, input）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 3</span>后端 <code>buildInputWithFiles()</code> 拼接文本输入和文件内容
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 4</span><code>ExecutionService.startSession()</code> 创建新会话（<code>session_UUID前8位</code>），初始化 rounds 列表和 currentRound=0
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 5</span><code>executeSkillInternal()</code> 构建状态为 "running" 的 ExecutionRound，调用 <code>buildPrompt()</code> 构建 Prompt 模板
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 6</span><code>AiService.chat()</code> 使用技能的 model/temperature/maxTokens（若配置）调用 AI API，获取输出
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 7</span>设置 round 的 output 和 status="success"，将 round 添加到 session.rounds，currentRound 设为 1，返回会话信息
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 8</span>前端渲染执行结果，调用 <code>detectOutputFiles()</code> 检测输出中的文件类型
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 9</span>渲染文件列表，每种文件类型提供对应的操作：HTML 预览、JSON 格式化、CSV 表格、代码块复制、Markdown 渲染等，支持下载和复制
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5.5 Multi-Round Orchestration Flow -->
+    <div class="subsection" id="flow-5-5">
+        <h3 class="subsection-title s-purple">5.5 多轮编排流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 1</span>第一轮执行完成后，前端显示多轮控制按钮：继续下一轮、返回上一轮、重新执行（根据 <code>canGoBack</code> 和 <code>canContinue</code> 状态控制按钮可用性）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 2</span><strong>继续下一轮</strong>：用户选择新技能（可不同于前一轮），输入可选内容。调用 <code>POST /api/sessions/{id}/continue-with-files</code>（有文件）或 <code>POST /api/sessions/{id}/continue</code>（无文件）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 3</span>后端 <code>continueToNext()</code>：若 input 为空，自动使用上一轮输出作为输入（<code>continuedFromPrevious=true</code>）；截断当前轮之后的轮次（分支机制），执行新轮次
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 4</span><strong>返回上一轮</strong>：调用 <code>POST /api/sessions/{id}/back</code>。<code>goBack()</code> 移除当前轮次，currentRound 减 1
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 5</span><strong>重新执行</strong>：调用 <code>POST /api/sessions/{id}/reexecute</code>。<code>reExecute()</code> 使用当前轮次的技能和输入（或新输入）重新执行，替换原轮次结果
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 6</span>每轮执行可使用不同技能，实现技能链式编排。例如：第一轮用「翻译技能」翻译文本 &rarr; 第二轮用「摘要技能」对翻译结果进行摘要 &rarr; 第三轮用「报告生成技能」生成报告
+                </div>
+            </div>
+        </div>
+        <div class="info-box info">
+            <div class="info-box-title">分支机制</div>
+            <p>当用户在第 N 轮继续执行后，又在第 N 轮再次继续（即回退后重新分支），系统会截断 N 轮之后的所有轮次，创建新的执行分支。这确保了执行历史的线性一致性。</p>
+        </div>
+    </div>
+
+    <!-- 5.6 Skill File Viewing Flow -->
+    <div class="subsection" id="flow-5-6">
+        <h3 class="subsection-title s-danger">5.6 技能文件查看流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 1</span>用户在技能管理 Tab 点击技能卡片
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 2</span>前端调用 <code>GET /api/skills/{id}</code> 获取技能详情（包含名称、描述、标签、文件列表等）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 3</span>前端调用 <code>GET /api/skills/{id}/files/list</code> 列出技能目录下的全部文件（递归遍历，包含子目录文件）
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 4</span>前端渲染文件列表（显示文件名、路径、大小、是否二进制），用户点击文件名
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 5</span>前端调用 <code>GET /api/skills/{id}/files/content?path=xxx</code> 读取文件内容
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 6</span>后端 <code>SkillService.readSkillFile()</code> 通过 <code>StorageService.read()</code> 从 FTP 读取文件字节。控制器通过 <code>isBinaryFile()</code> 判断：文本文件返回 UTF-8 字符串，二进制文件返回 Base64 编码
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 7</span>前端显示文件内容：文本文件直接显示（代码文件有语法高亮样式），二进制文件显示提示信息
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5.7 Application Startup Flow -->
+    <div class="subsection" id="flow-5-7">
+        <h3 class="subsection-title">5.7 应用启动流程</h3>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 1</span><code>AiSkillApplication.main()</code> 调用 <code>SpringApplication.run()</code> 启动 Spring Boot
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 2</span>Spring 容器初始化，加载 <code>AiConfig</code>（<code>@ConfigurationProperties(prefix="ai")</code> 绑定配置），创建 <code>RestTemplate</code> Bean
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 3</span>加载 <code>StorageConfig</code>，读取 <code>storage.ftp.*</code> 配置，创建 <code>FtpStorageService</code> Bean
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 4</span><code>FtpStorageService.init()</code>（<code>@PostConstruct</code>）连接 FTP 服务器，创建根目录（<code>makeDirs</code>），输出日志 "FTP storage initialized"
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 5</span><code>SkillService.init()</code>（<code>@PostConstruct</code>）调用 <code>storage.listDirectories("")</code> 列出所有技能目录
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 6</span>对每个技能目录调用 <code>loadSkillFromStorage()</code>：优先读取 <code>meta.json</code>（Jackson 反序列化），若损坏或不存在则回退解析 <code>skill.md</code> 并扫描目录文件
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 7</span>将加载的技能存入 <code>skillCache</code>（<code>ConcurrentHashMap</code>），输出 "Loaded N skills from storage"
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-content">
+                    <span class="step-number">步骤 8</span>服务就绪，监听 8080 端口，前端页面可通过 <code>http://localhost:8080</code> 访问
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== Section 6: Configuration ==================== -->
+<section class="section" id="section-6">
+    <div class="section-header s6">
+        <span class="section-number">6</span>
+        <span class="section-title">配置说明</span>
+    </div>
+
+    <p><code>application.yml</code> 完整配置项说明：</p>
+
+    <h4>服务器配置</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th style="width:250px;">配置项</th><th style="width:120px;">默认值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><code>server.port</code></td><td>8080</td><td>服务器端口</td></tr>
+                <tr><td><code>server.servlet.encoding.charset</code></td><td>UTF-8</td><td>字符编码</td></tr>
+                <tr><td><code>server.servlet.encoding.enabled</code></td><td>true</td><td>启用编码</td></tr>
+                <tr><td><code>server.servlet.encoding.force</code></td><td>true</td><td>强制编码</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>Spring 配置</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th style="width:280px;">配置项</th><th style="width:120px;">默认值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><code>spring.application.name</code></td><td>ai-skill</td><td>应用名称</td></tr>
+                <tr><td><code>spring.servlet.multipart.max-file-size</code></td><td>100MB</td><td>单文件最大大小</td></tr>
+                <tr><td><code>spring.servlet.multipart.max-request-size</code></td><td>500MB</td><td>请求最大大小</td></tr>
+                <tr><td><code>spring.web.resources.static-locations</code></td><td>classpath:/static/</td><td>静态资源路径</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>AI 配置</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th style="width:250px;">配置项</th><th style="width:200px;">默认值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><code>ai.base-url</code></td><td>https://dashscope.aliyuncs.com/compatible-mode/v1</td><td>AI API 基础 URL（OpenAI 兼容）</td></tr>
+                <tr><td><code>ai.api-key</code></td><td>sk-xxx</td><td>API 密钥</td></tr>
+                <tr><td><code>ai.model</code></td><td>glm-5.2</td><td>默认模型名称</td></tr>
+                <tr><td><code>ai.temperature</code></td><td>0.7</td><td>温度参数（0-2，越高越随机）</td></tr>
+                <tr><td><code>ai.max-tokens</code></td><td>4096</td><td>最大输出 Token 数</td></tr>
+                <tr><td><code>ai.timeout</code></td><td>300000 (5分钟)</td><td>请求超时时间（毫秒）</td></tr>
+                <tr><td><code>ai.think</code></td><td>false</td><td>是否启用推理模式（Ollama/Qwen3）</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>FTP 存储配置</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th style="width:250px;">配置项</th><th style="width:160px;">默认值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><code>storage.ftp.host</code></td><td>${FTP_HOST:localhost}</td><td>FTP 服务器地址（支持环境变量）</td></tr>
+                <tr><td><code>storage.ftp.port</code></td><td>${FTP_PORT:21}</td><td>FTP 端口</td></tr>
+                <tr><td><code>storage.ftp.username</code></td><td>${FTP_USERNAME:admin}</td><td>FTP 用户名</td></tr>
+                <tr><td><code>storage.ftp.password</code></td><td>${FTP_PASSWORD:admin}</td><td>FTP 密码</td></tr>
+                <tr><td><code>storage.ftp.base-dir</code></td><td>${FTP_BASE_DIR:/skills}</td><td>FTP 根目录</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>日志配置</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th style="width:280px;">配置项</th><th style="width:120px;">默认值</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><code>logging.level.com.example.aiskill</code></td><td>DEBUG</td><td>应用日志级别</td></tr>
+                <tr><td><code>logging.level.org.springframework.web</code></td><td>INFO</td><td>Spring Web 日志级别</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box info">
+        <div class="info-box-title">环境变量支持</div>
+        <p>FTP 存储配置支持通过环境变量覆盖（格式 <code>${ENV_VAR:默认值}</code>）。Docker 部署时通过 <code>.env</code> 文件或 <code>docker-compose.yml</code> 的 environment 配置传入。</p>
+    </div>
+</section>
+
+<!-- ==================== Section 7: Skill Format ==================== -->
+<section class="section" id="section-7">
+    <div class="section-header s7">
+        <span class="section-number">7</span>
+        <span class="section-title">技能格式说明</span>
+    </div>
+
+    <p>技能以 <code>skill.md</code> 文件为核心，采用 YAML front matter + Markdown 正文的格式。</p>
+
+    <h4>文件格式结构</h4>
+    <pre><code><span class="tok-com">---</span>                                    <span class="tok-com"># YAML front matter 开始</span>
+<span class="tok-key">name:</span> 技能名称                         <span class="tok-com"># 必填</span>
+<span class="tok-key">description:</span> 技能描述                   <span class="tok-com"># 必填</span>
+<span class="tok-key">tags:</span> [标签1, 标签2, 标签3]             <span class="tok-com"># 可选，支持数组或逗号分隔字符串</span>
+<span class="tok-key">input_type:</span> text                       <span class="tok-com"># 可选，默认 text</span>
+<span class="tok-key">output_type:</span> text                      <span class="tok-com"># 可选，默认 text</span>
+<span class="tok-key">model:</span> gpt-4                           <span class="tok-com"># 可选，覆盖默认模型</span>
+<span class="tok-key">temperature:</span> <span class="tok-num">0.7</span>                        <span class="tok-com"># 可选，覆盖默认温度</span>
+<span class="tok-key">max_tokens:</span> <span class="tok-num">4096</span>                        <span class="tok-com"># 可选，覆盖默认最大Token数</span>
+<span class="tok-com">---</span>                                    <span class="tok-com"># YAML front matter 结束</span>
+
+<span class="tok-com"># Markdown 正文（Prompt 模板）</span>
+
+你是一个 [角色描述]。请处理以下输入...
+
+<span class="tok-com">## 参考资料</span>
+<span class="tok-com">{materials}</span>                                <span class="tok-com"># 占位符：替换为材料文件内容</span>
+
+<span class="tok-com">## 用户输入</span>
+<span class="tok-com">{input}</span>                                   <span class="tok-com"># 占位符：替换为用户输入</span>
+
+<span class="tok-com">## 脚本参考</span>
+<span class="tok-com">{scripts}</span>                                 <span class="tok-com"># 占位符：替换为脚本文件内容</span></code></pre>
+
+    <h4>YAML Front Matter 字段说明</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th style="width:140px;">字段</th><th style="width:80px;">必填</th><th style="width:140px;">类型</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><code>name</code></td><td>是</td><td>String</td><td>技能名称，用于显示和搜索匹配</td></tr>
+                <tr><td><code>description</code></td><td>是</td><td>String</td><td>技能描述，用于 AI 语义匹配和关键词搜索</td></tr>
+                <tr><td><code>tags</code></td><td>否</td><td>List 或 String</td><td>标签列表，支持 YAML 数组 <code>[a, b, c]</code> 或逗号分隔字符串</td></tr>
+                <tr><td><code>input_type</code></td><td>否</td><td>String</td><td>输入类型，默认 <code>text</code></td></tr>
+                <tr><td><code>output_type</code></td><td>否</td><td>String</td><td>输出类型，默认 <code>text</code></td></tr>
+                <tr><td><code>model</code></td><td>否</td><td>String</td><td>指定模型，覆盖全局 <code>ai.model</code> 配置</td></tr>
+                <tr><td><code>temperature</code></td><td>否</td><td>Number</td><td>温度参数，覆盖全局配置</td></tr>
+                <tr><td><code>max_tokens</code></td><td>否</td><td>Number</td><td>最大Token数，覆盖全局配置</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>Prompt 模板占位符</h4>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th style="width:160px;">占位符</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><code>{input}</code></td><td>替换为用户的输入内容（文本 + 上传文件内容）</td></tr>
+                <tr><td><code>{materials}</code></td><td>替换为技能 <code>materials/</code> 目录下所有材料文件的内容拼接</td></tr>
+                <tr><td><code>{scripts}</code></td><td>替换为技能 <code>scripts/</code> 目录下所有脚本文件的内容（带代码块标记）</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>技能目录结构</h4>
+    <pre><code><span class="dir">skill_1736820600000/</span>                <span class="comment"># 技能根目录（skillId）</span>
+├── <span class="highlight">skill.md</span>                          <span class="comment"># 技能定义文件（必需）</span>
+├── <span class="highlight">meta.json</span>                         <span class="comment"># 元数据缓存（自动生成）</span>
+├── <span class="dir">materials/</span>                        <span class="comment"># 材料文件目录</span>
+│   ├── <span class="file">glossary.txt</span>                   <span class="comment"># 术语表</span>
+│   ├── <span class="file">reference.md</span>                   <span class="comment"># 参考资料</span>
+│   └── <span class="file">data.csv</span>                       <span class="comment"># 数据文件</span>
+└── <span class="dir">scripts/</span>                          <span class="comment"># 脚本文件目录</span>
+    ├── <span class="file">preprocess.py</span>                  <span class="comment"># 预处理脚本</span>
+    └── <span class="file">postprocess.sh</span>                 <span class="comment"># 后处理脚本</span></code></pre>
+
+    <div class="info-box warning">
+        <div class="info-box-title">文件分类规则</div>
+        <p>上传时根据文件扩展名自动分类：<strong>脚本</strong>（.py, .sh, .js, .rb, .pl, .go, .java, .bat）存入 <code>scripts/</code> 目录；<strong>材料</strong>（.txt, .md, .pdf, .docx, .doc, .csv, .json, .xml, .html, .yaml, .yml）存入 <code>materials/</code> 目录；其他文件存入 <code>materials/</code> 目录（按材料处理）。</p>
+    </div>
+
+    <h4>完整示例：skill.md</h4>
+    <pre><code>---
+<span class="tok-key">name:</span> 代码审查助手
+<span class="tok-key">description:</span> 对代码进行审查，找出潜在问题并给出改进建议
+<span class="tok-key">tags:</span> [代码审查, Code Review, 质量]
+<span class="tok-key">input_type:</span> text
+<span class="tok-key">output_type:</span> text
+<span class="tok-key">model:</span> gpt-4
+<span class="tok-key">temperature:</span> <span class="tok-num">0.3</span>
+<span class="tok-key">max_tokens:</span> <span class="tok-num">8192</span>
+---
+
+# 代码审查助手
+
+你是一个资深的代码审查专家。请对用户提交的代码进行审查。
+
+## 审查规则
+
+1. 检查代码风格和规范
+2. 识别潜在的 Bug 和安全漏洞
+3. 评估代码可读性和可维护性
+4. 提出具体的改进建议
+
+## 参考资料
+
+{materials}
+
+## 用户输入
+
+{input}
+
+请按照以下格式输出审查结果：
+1. 总体评价
+2. 问题列表（按严重程度排序）
+3. 改进建议</code></pre>
+</section>
+
+<!-- ==================== Section 8: Deployment ==================== -->
+<section class="section" id="section-8">
+    <div class="section-header s8">
+        <span class="section-number">8</span>
+        <span class="section-title">部署说明</span>
+    </div>
+
+    <div class="subsection">
+        <h3 class="subsection-title">本地运行</h3>
+        <div class="info-box info">
+            <div class="info-box-title">前置条件</div>
+            <ul style="margin-bottom:0;">
+                <li>JDK 8（SpringBoot 2.7 不兼容 Java 26+）</li>
+                <li>Maven 3.6+</li>
+                <li>FTP 服务器（默认 localhost:21，用户名 admin / 密码 admin）</li>
+            </ul>
+        </div>
+
+        <h4>方式一：使用启动脚本</h4>
+        <pre><code><span class="tok-com"># 赋予执行权限</span>
+chmod +x run.sh
+
+<span class="tok-com"># 启动应用</span>
+./run.sh</code></pre>
+        <p><code>run.sh</code> 会自动查找 Java 8 环境，设置 <code>JAVA_HOME</code>，然后执行 <code>mvn spring-boot:run</code>。</p>
+
+        <h4>方式二：手动 Maven 启动</h4>
+        <pre><code><span class="tok-com"># 确保使用 Java 8</span>
+export JAVA_HOME=/path/to/jdk8
+
+<span class="tok-com"># 编译并启动</span>
+mvn spring-boot:run</code></pre>
+
+        <h4>方式三：打包后运行</h4>
+        <pre><code><span class="tok-com"># 打包</span>
+mvn clean package -DskipTests
+
+<span class="tok-com"># 运行 JAR</span>
+java -jar target/ai-skill-1.0.0.jar</code></pre>
+
+        <p>启动成功后，应用监听 <code>http://localhost:8080</code>，前端页面直接访问该地址即可。</p>
+    </div>
+
+    <div class="subsection">
+        <h3 class="subsection-title s-info">Docker 部署</h3>
+
+        <h4>步骤 1：准备环境变量</h4>
+        <pre><code><span class="tok-com"># 复制环境变量示例文件</span>
+cp .env.example .env
+
+<span class="tok-com"># 编辑 .env，填入实际的 FTP 和 AI 配置</span>
+vim .env</code></pre>
+
+        <h4>步骤 2：启动服务</h4>
+        <pre><code><span class="tok-com"># 构建并启动</span>
+docker-compose up -d
+
+<span class="tok-com"># 查看日志</span>
+docker-compose logs -f backend</code></pre>
+
+        <h4>步骤 3：验证服务</h4>
+        <pre><code><span class="tok-com"># 检查服务状态</span>
+curl http://localhost:8080/api/skills/ai-status
+
+<span class="tok-com"># 预期返回</span>
+{"code":200,"message":"success","data":{"configured":true}}</code></pre>
+
+        <div class="info-box warning">
+            <div class="info-box-title">Docker 部署注意事项</div>
+            <ul style="margin-bottom:0;">
+                <li>FTP 服务器需要独立部署，Docker Compose 中不包含 FTP 服务</li>
+                <li>如果 FTP 在宿主机，<code>FTP_HOST</code> 应设为 <code>host.docker.internal</code>（Docker Desktop）或宿主机 IP</li>
+                <li>JVM 内存参数默认 <code>-Xms256m -Xmx512m</code>，可在 <code>Dockerfile.backend</code> 中调整</li>
+                <li>容器重启策略为 <code>unless-stopped</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="subsection">
+        <h3 class="subsection-title s-success">配置自定义 AI 服务</h3>
+        <p>系统支持任何 OpenAI 兼容的 API 服务。修改 <code>application.yml</code> 或环境变量即可切换：</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>AI 服务</th><th>base-url</th><th>model 示例</th></tr></thead>
+                <tbody>
+                    <tr><td>OpenAI</td><td><code>https://api.openai.com/v1</code></td><td>gpt-3.5-turbo / gpt-4</td></tr>
+                    <tr><td>阿里通义千问</td><td><code>https://dashscope.aliyuncs.com/compatible-mode/v1</code></td><td>qwen-turbo / glm-5.2</td></tr>
+                    <tr><td>Ollama (本地)</td><td><code>http://localhost:11434/v1</code></td><td>qwen3 / llama3</td></tr>
+                    <tr><td>DeepSeek</td><td><code>https://api.deepseek.com/v1</code></td><td>deepseek-chat</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-box info">
+            <div class="info-box-title">think 参数</div>
+            <p>当使用 Ollama 运行推理模型（如 Qwen3）时，设置 <code>ai.think: true</code> 可启用推理模式。系统支持从 <code>content</code>、<code>reasoning_content</code>、<code>reasoning</code> 三个字段依次回退解析 AI 输出。</p>
+        </div>
+    </div>
+</section>
+
+</main>
+
+<!-- ==================== Back to Top Button ==================== -->
+<button class="back-to-top" id="back-to-top" onclick="scrollToTop()" title="返回顶部">
+    &#8593;
+</button>
+
+<!-- ==================== JavaScript ==================== -->
+<script>
+    // Sidebar toggle (mobile)
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebar-overlay').classList.toggle('show');
+    }
+
+    // Back to top
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Show/hide back to top button
+    var backToTopBtn = document.getElementById('back-to-top');
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 400) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    });
+
+    // Active nav highlighting on scroll
+    var sections = document.querySelectorAll('.section');
+    var navLinks = document.querySelectorAll('.sidebar nav a');
+    var navSubLinks = document.querySelectorAll('.sidebar nav .nav-sub a');
+
+    function updateActiveNav() {
+        var current = '';
+        var scrollPos = window.pageYOffset + 100;
+
+        sections.forEach(function(section) {
+            var top = section.offsetTop;
+            var height = section.offsetHeight;
+            if (scrollPos >= top && scrollPos < top + height) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        // Also check subsections
+        var subsections = document.querySelectorAll('.subsection');
+        var currentSub = '';
+        subsections.forEach(function(sub) {
+            var top = sub.offsetTop;
+            if (scrollPos >= top - 50) {
+                currentSub = sub.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(function(link) {
+            link.classList.remove('active');
+            var href = link.getAttribute('href');
+            if (href === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+
+        navSubLinks.forEach(function(link) {
+            var href = link.getAttribute('href');
+            if (href === '#' + currentSub) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    window.addEventListener('scroll', updateActiveNav);
+    window.addEventListener('load', updateActiveNav);
+
+    // Close sidebar on nav click (mobile)
+    document.querySelectorAll('.sidebar nav a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 900) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebar-overlay').classList.remove('show');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

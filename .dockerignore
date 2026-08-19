@@ -1,0 +1,13 @@
+target/
+data/
+.git/
+.env
+*.log
+*.md
+run.sh
+deploy.sh
+travel-booking-design-report/
+*.iml
+.idea/
+.vscode/
+.DS_Store

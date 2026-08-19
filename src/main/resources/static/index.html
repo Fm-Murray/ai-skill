@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  AI 技能编排系统 - 主页面 (index.html)
+  ============================================================
+  功能概述：
+  1. 技能上传：支持拖拽/点击上传 skill.md 及相关文件或压缩包
+  2. 技能管理：查看、搜索（含 AI 语义搜索）、删除已上传的技能
+  3. 技能执行：AI 自动选择或手动搜索技能执行，支持链式编排
+  ============================================================
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 技能编排系统</title>
+    <link rel="stylesheet" href="/css/style.css?v=20260808i">
+</head>
+<body>
+    <!-- ==================== 页面头部 (Header) ==================== -->
+    <!-- 包含 Logo、标题、副标题和 AI 连接状态徽章 -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo">AI</div>
+            <div>
+                <h1>AI 技能编排系统</h1>
+                <p class="subtitle">上传技能 · 语义搜索 · 链式编排</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <!-- AI 状态徽章：显示 AI 服务的连接状态 -->
+            <div id="ai-status-badge" class="status-badge status-unknown">
+                <span class="status-dot"></span>
+                <span id="ai-status-text">检查中...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== 标签页导航 (Tab Navigation) ==================== -->
+    <!-- 三个主标签页：技能上传、技能管理、技能执行 -->
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="upload">
+            <span class="tab-icon">+</span>
+            <span>技能上传</span>
+        </button>
+        <button class="tab-btn" data-tab="skills">
+            <span class="tab-icon">≡</span>
+            <span>技能管理</span>
+        </button>
+        <button class="tab-btn" data-tab="execute">
+            <span class="tab-icon">▶</span>
+            <span>技能执行</span>
+        </button>
+    </nav>
+
+    <main class="main-content">
+        <!-- ==================== 标签页一：技能上传 (Upload Tab) ==================== -->
+        <!-- 上传区域支持拖拽和点击选择，需要 skill.md 或包含 skill.md 的压缩包 -->
+        <section id="tab-upload" class="tab-panel active">
+            <div class="panel-header">
+                <h2>上传技能</h2>
+                <p>上传 skill.md（必需）、资料文件和脚本文件，或上传压缩包（.zip / .tar.gz）自动解压校验</p>
+            </div>
+
+            <!-- 上传拖拽区域：支持点击选择和拖拽文件 -->
+            <div class="upload-zone" id="upload-zone">
+                <div class="upload-icon">📁</div>
+                <p class="upload-hint">拖拽文件到此处，或</p>
+                <label for="file-input" class="upload-label">点击选择文件</label>
+                <input type="file" id="file-input" multiple hidden>
+                <p class="upload-tip">支持 .md / .txt / .py / .sh / .js / .json / .csv 等格式，或上传 .zip / .tar.gz / .tgz / .tar 压缩包（须包含 skill.md）</p>
+            </div>
+
+            <!-- 待上传文件列表（动态渲染） -->
+            <div id="upload-file-list" class="file-list"></div>
+
+            <!-- 上传操作按钮：上传和清空 -->
+            <div class="upload-actions" id="upload-actions" style="display:none;">
+                <button id="upload-btn" class="btn btn-primary">上传技能</button>
+                <button id="clear-btn" class="btn btn-secondary">清空列表</button>
+            </div>
+
+            <!-- skill.md 格式说明区域 -->
+            <div class="skill-md-format">
+                <h3>skill.md 格式说明</h3>
+                <pre><code>---
+name: 技能名称
+description: 技能描述
+tags: [标签1, 标签2]
+input_type: text
+output_type: text
+model: gpt-3.5-turbo        # 可选，覆盖默认模型
+temperature: 0.7             # 可选
+---
+
+# 提示词模板
+
+你是一个专业的助手...
+
+用户输入:
+{input}
+
+参考资料:
+{materials}
+
+脚本:
+{scripts}</code></pre>
+            </div>
+        </section>
+
+        <!-- ==================== 标签页二：技能管理 (Skills Tab) ==================== -->
+        <!-- 技能列表展示、搜索（支持 AI 语义搜索）和删除功能 -->
+        <section id="tab-skills" class="tab-panel">
+            <div class="panel-header">
+                <h2>技能管理</h2>
+                <p>查看、搜索和删除已上传的技能</p>
+            </div>
+
+            <!-- 搜索栏：输入描述搜索技能 -->
+            <div class="search-bar">
+                <input type="text" id="skill-search-input" class="search-input"
+                       placeholder="输入描述查找技能（支持 AI 语义搜索）">
+                <button id="skill-search-btn" class="btn btn-primary">搜索</button>
+                <button id="skill-refresh-btn" class="btn btn-secondary">刷新</button>
+            </div>
+
+            <!-- 搜索模式切换：是否使用 AI 语义搜索 -->
+            <div class="search-mode">
+                <label>
+                    <input type="checkbox" id="use-ai-search" checked>
+                    <span>使用 AI 语义搜索</span>
+                </label>
+            </div>
+
+            <!-- 技能卡片列表容器（动态渲染） -->
+            <div id="skill-cards" class="skill-cards">
+                <div class="empty-state">
+                    <p>暂无技能，请先上传</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 标签页三：技能执行 (Execute Tab) ==================== -->
+        <!-- 输入内容或上传文件，AI 自动选择技能执行，也可手动搜索选择技能 -->
+        <section id="tab-execute" class="tab-panel">
+            <div class="panel-header">
+                <h2>技能执行</h2>
+                <p>输入内容或上传文件，AI 自动选择技能执行，也可手动搜索选择技能</p>
+            </div>
+
+            <!-- ----- 子区域一：无会话状态时的技能选择与输入界面 ----- -->
+            <!-- 初始状态显示，执行成功后切换到会话视图 -->
+            <div id="execute-init" class="execute-section">
+                <!-- 输入区域（始终可见）：文本输入 + 文件上传 -->
+                <div class="exec-input-area">
+                    <label class="input-label">
+                        <span>输入内容</span>
+                        <span class="input-hint">AI 会根据输入内容自动选择最匹配的技能</span>
+                    </label>
+                    <textarea id="exec-input-text" class="exec-textarea"
+                              placeholder="请输入要处理的内容（可选，也可仅上传文件）..." rows="6"></textarea>
+
+                    <label class="input-label" style="margin-top:12px;">
+                        <span>上传文件（可选）</span>
+                    </label>
+                    <!-- 执行页文件上传拖拽区域 -->
+                    <div class="exec-upload-zone" id="exec-upload-zone">
+                        <div class="upload-icon">📎</div>
+                        <p class="upload-hint">拖拽文件到此处，或</p>
+                        <label for="exec-file-input" class="upload-label">点击选择文件</label>
+                        <input type="file" id="exec-file-input" multiple hidden>
+                        <p class="upload-tip">上传文件让技能对文件内容进行处理（支持 .txt / .md / .csv / .json 等文本文件）</p>
+                    </div>
+                    <div id="exec-file-list" class="file-list"></div>
+
+                    <!-- 执行操作按钮：AI 自动执行 或 手动搜索技能 -->
+                    <div class="exec-actions">
+                        <button id="auto-exec-btn" class="btn btn-primary btn-large">
+                            <span class="btn-icon">🤖</span> AI 自动选择并执行
+                        </button>
+                        <button id="show-search-btn" class="btn btn-secondary">
+                            <span class="btn-icon">🔍</span> 手动搜索技能
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI 路由判断结果区域（点击"AI 自动选择并执行"后显示） -->
+                <div id="route-result-section" class="route-result-section" style="display:none;">
+                    <div class="section-divider">
+                        <span>第一轮：路由判断结果</span>
+                    </div>
+                    <!-- AI 思考过程（可折叠） -->
+                    <div id="thinking-process-area" class="thinking-process-area" style="display:none;">
+                        <div class="thinking-process-header" onclick="toggleThinkingProcess()">
+                            <span class="thinking-icon">🧠</span>
+                            <span>AI 思考过程</span>
+                            <span id="thinking-toggle" class="thinking-toggle">▼</span>
+                        </div>
+                        <div id="thinking-process-content" class="thinking-process-content" style="display:none;"></div>
+                    </div>
+                    <!-- 候选技能列表 -->
+                    <div class="candidates-header">
+                        <span>匹配到 <span id="candidate-count">0</span> 个候选技能，请选择：</span>
+                    </div>
+                    <div id="candidate-list" class="candidate-list"></div>
+                </div>
+
+                <!-- 手动搜索技能区域（默认隐藏，点击"手动搜索技能"后展开） -->
+                <div id="manual-search-section" style="display:none; margin-top:20px;">
+                    <div class="section-divider">
+                        <span>手动选择技能</span>
+                    </div>
+                    <!-- 手动搜索栏 -->
+                    <div class="search-bar">
+                        <input type="text" id="exec-search-input" class="search-input"
+                               placeholder="输入描述查找要执行的技能">
+                        <button id="exec-search-btn" class="btn btn-primary">搜索</button>
+                    </div>
+
+                    <!-- 搜索结果列表（动态渲染） -->
+                    <div id="exec-skill-results" class="skill-select-list"></div>
+
+                    <!-- 手动执行操作区域（选择技能后显示） -->
+                    <div id="exec-manual-input-area" class="exec-input-area" style="display:none; margin-top:16px;">
+                        <div class="selected-skill-info" id="selected-skill-info"></div>
+                        <div class="exec-actions">
+                            <button id="exec-run-btn" class="btn btn-primary btn-large">
+                                <span class="btn-icon">▶</span> 执行选中技能
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ----- 子区域二：活跃会话状态界面（执行链 + 导航操作） ----- -->
+            <!-- 执行成功后显示，包含执行链时间线、当前轮次详情和导航按钮 -->
+            <div id="execute-session" class="execute-section" style="display:none;">
+                <div class="session-header">
+                    <div>
+                        <h3>执行链</h3>
+                        <span id="session-id-display" class="session-id"></span>
+                    </div>
+                    <button id="new-session-btn" class="btn btn-secondary">新建会话</button>
+                </div>
+
+                <!-- 执行链时间线：展示所有执行轮次的链式关系 -->
+                <div id="exec-chain" class="exec-chain"></div>
+
+                <!-- 当前轮次详情：显示输入、输出和错误信息 -->
+                <div id="current-round-detail" class="round-detail"></div>
+
+                <!-- 回复输入区域：用户可补充信息，系统将创建新一轮执行 -->
+                <div id="reply-section" class="reply-section">
+                    <div class="reply-header">
+                        <span class="reply-icon">💬</span>
+                        <span>补充回复</span>
+                        <span class="reply-hint">技能需要更多信息？在此输入回复，系统将合并上下文后执行新一轮（执行链会新增节点）</span>
+                    </div>
+                    <textarea id="reply-input" class="reply-textarea"
+                              placeholder="例如：受众是年轻旅行者，用途是预订酒店和活动，调性是温暖冒险感。go ahead"></textarea>
+                    <div class="reply-actions">
+                        <button id="reply-submit-btn" class="btn btn-primary">
+                            <span class="btn-icon">▶</span> 提交回复并执行新一轮
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 导航提示区："返回上一轮 / 重新执行 / 继续下一轮" -->
+                <div id="nav-prompt" class="nav-prompt">
+                    <div class="nav-prompt-question">请选择下一步操作</div>
+                    <div class="nav-prompt-buttons">
+                        <button id="nav-back-btn" class="btn btn-secondary nav-btn">
+                            <span class="btn-icon">←</span> 返回上一轮
+                        </button>
+                        <button id="nav-reexecute-btn" class="btn btn-warning nav-btn">
+                            <span class="btn-icon">↻</span> 重新执行
+                        </button>
+                        <button id="nav-continue-btn" class="btn btn-primary nav-btn">
+                            继续下一轮 <span class="btn-icon">→</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 继续执行面板（点击"继续下一轮"后展开，由 JS 动态填充候选技能列表） -->
+                <div id="continue-panel" class="continue-panel" style="display:none;"></div>
+            </div>
+
+            <!-- 全屏加载遮罩层（执行操作时显示） -->
+            <div id="loading-overlay" class="loading-overlay" style="display:none;">
+                <div class="loading-spinner"></div>
+                <p id="loading-text">正在执行...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==================== 全局消息提示 (Toast) ==================== -->
+    <!-- 轻量级消息通知，3 秒后自动消失 -->
+    <div id="toast" class="toast"></div>
+
+    <!-- ==================== 技能详情弹窗 (Skill Detail Modal) ==================== -->
+    <!-- 点击技能卡片时弹出，展示技能详细信息、提示词模板和文件列表 -->
+    <div id="skill-modal" class="modal" style="display:none;">
+        <!-- 遮罩层：点击关闭弹窗 -->
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">技能详情</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <!-- 弹窗内容区域（动态渲染） -->
+            <div id="modal-body" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- ==================== 浮动回复按钮（会话视图中显示，点击滚动到回复区域） ==================== -->
+    <button id="floating-reply-btn" class="floating-reply-btn">
+        <span class="float-btn-icon">💬</span>
+        <span>点击回复技能</span>
+    </button>
+
+    <!-- ==================== 引入前端脚本 ==================== -->
+    <script src="/js/app.js?v=20260808i"></script>
+</body>
+</html>
