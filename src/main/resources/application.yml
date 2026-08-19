@@ -23,7 +23,7 @@ spring:
 # AI configuration - supports any OpenAI-compatible API
 ai:
   base-url: ${AI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
-  api-key: ${AI_API_KEY:sk-ws-H.ERRRDEX.a5CD.MEUCICpeKXQZPdYa-b6iZBi6xGwormu_75viIxWkltZDPpc5AiEA8hf7LjT9DDxQ8ChrGU8NiwPVJ6jTOzJjiQCxi0-T-Vw}
+  api-key: ${AI_API_KEY:22222}
   model: ${AI_MODEL:qwen3.7-max}
   temperature: ${AI_TEMPERATURE:0.7}
   max-tokens: ${AI_MAX_TOKENS:16384}
